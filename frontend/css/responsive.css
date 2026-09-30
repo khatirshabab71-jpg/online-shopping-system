@@ -1,0 +1,178 @@
+/* ==========================================================================
+   ShopNow - Responsive Media Queries
+   Adaptations for Desktop, Laptop, Tablet, and Mobile Viewports
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. LAPTOP & MEDIUM SCREENS (Max-width: 1024px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-panels-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   2. TABLET SCREENS (Max-width: 768px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 768px) {
+    .top-bar-content {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .search-box {
+        max-width: 100%;
+    }
+
+    .header-actions {
+        justify-content: space-between;
+    }
+
+    .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+
+    .products-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-card {
+        position: static;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .product-details-container {
+        grid-template-columns: 1fr;
+        padding: 24px;
+    }
+
+    .cart-layout, .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-summary-card, .checkout-summary-card {
+        position: static;
+    }
+
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* Admin Responsiveness */
+    .admin-container {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        min-height: auto;
+        padding: 12px 0;
+    }
+
+    .admin-nav ul {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .admin-nav ul li a {
+        padding: 10px 16px;
+        white-space: nowrap;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .admin-nav ul li a.active {
+        border-bottom-color: var(--primary-color);
+    }
+
+    .admin-main {
+        padding: 20px 16px;
+    }
+
+    .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   3. MOBILE SCREENS (Max-width: 480px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .product-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .chart-item {
+        grid-template-columns: 1fr;
+    }
+
+    .receipt-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

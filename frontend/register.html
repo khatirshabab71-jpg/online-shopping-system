@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Registration - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Top Bar & Header -->
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="auth-wrapper">
+        <div class="container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2>Create an Account</h2>
+                    <p>Join ShopNow to manage orders, save your address, and shop seamlessly.</p>
+                </div>
+
+                <!-- Alert Message Box -->
+                <div id="authAlert" class="alert-message hidden"></div>
+
+                <form id="registerForm" class="auth-form" novalidate>
+                    <div class="form-group">
+                        <label for="fullName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                        <small class="error-text" id="fullNameError"></small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" placeholder="example@email.com" required>
+                            <small class="error-text" id="emailError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" placeholder="+1234567890" required>
+                            <small class="error-text" id="phoneError"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password">Password <span class="required">*</span></label>
+                            <input type="password" id="password" name="password" placeholder="At least 6 characters" required>
+                            <small class="error-text" id="passwordError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" required>
+                            <small class="error-text" id="confirmPasswordError"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Shipping Address <span class="required">*</span></label>
+                        <textarea id="address" name="address" rows="3" placeholder="Enter full street address, city, state & zip code" required></textarea>
+                        <small class="error-text" id="addressError"></small>
+                    </div>
+
+                    <button type="submit" class="btn-submit-form" id="registerBtn">Create Account</button>
+
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="login.html">Login here</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

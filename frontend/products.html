@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Products - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form" id="productsSearchForm">
+                        <input type="text" name="search" id="searchInput" placeholder="Search phone, laptop, shirt, headphones..." value="">
+                        <button type="submit" id="searchBtn">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html" class="active">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <!-- Page Title & Breadcrumb -->
+        <div class="page-header">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> &gt; <span>Products Catalog</span>
+            </div>
+            <h1 id="catalogTitle">Product Catalog</h1>
+            <p id="catalogSubtitle">Browse through our wide range of quality products</p>
+        </div>
+
+        <!-- Products Layout: Sidebar Filters + Main Grid -->
+        <div class="products-layout">
+            <!-- Sidebar Filter Options -->
+            <aside class="products-sidebar">
+                <div class="filter-card">
+                    <h3>Filter Products</h3>
+                    
+                    <div class="filter-group">
+                        <label for="categoryFilter">Category</label>
+                        <select id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            <option value="1">Electronics</option>
+                            <option value="2">Laptops & Computing</option>
+                            <option value="3">Fashion & Apparel</option>
+                            <option value="4">Accessories</option>
+                            <option value="5">Home & Kitchen</option>
+                            <option value="6">Sports & Outdoor</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sortFilter">Sort By</label>
+                        <select id="sortFilter">
+                            <option value="default">Default Order</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="rating">Highest Rated</option>
+                            <option value="newest">Newest First</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="stockFilter">Stock Status</label>
+                        <select id="stockFilter">
+                            <option value="all">All Items</option>
+                            <option value="in-stock">In Stock Only</option>
+                        </select>
+                    </div>
+
+                    <button type="button" id="applyFilterBtn" class="btn-primary btn-full">Apply Filters</button>
+                    <button type="button" id="resetFilterBtn" class="btn-secondary btn-full" style="margin-top: 10px;">Reset Filters</button>
+                </div>
+            </aside>
+
+            <!-- Main Products List Container -->
+            <section class="products-content">
+                <div class="products-header-bar">
+                    <span id="productCountInfo">Showing all products</span>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="product-grid" id="productsGrid">
+                    <!-- Products will be populated dynamically or previewed -->
+                </div>
+
+                <!-- Empty State Message -->
+                <div id="noProductsFound" class="empty-state hidden">
+                    <div class="empty-icon">🔍</div>
+                    <h2>No products found.</h2>
+                    <p>We couldn't find any products matching your search criteria. Try searching for something else like "phone", "laptop", or "headphones".</p>
+                    <button id="clearSearchBtn" class="btn-primary">View All Products</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>

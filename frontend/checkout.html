@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <div class="page-header">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> &gt; <a href="cart.html">Cart</a> &gt; <span>Checkout</span>
+            </div>
+            <h1>Order Checkout</h1>
+            <p>Please review your order summary and fill out shipping details.</p>
+        </div>
+
+        <!-- Alert Banner -->
+        <div id="checkoutAlert" class="alert-message hidden"></div>
+
+        <form id="checkoutForm" class="checkout-layout" novalidate>
+            <!-- Left Side: Customer Info, Shipping & Payment -->
+            <div class="checkout-form-column">
+                <!-- Customer Information Section -->
+                <div class="checkout-section-card">
+                    <h2>1. Customer Information</h2>
+                    <div class="form-group">
+                        <label for="checkoutName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="checkoutName" name="fullName" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="checkoutEmail">Email Address <span class="required">*</span></label>
+                            <input type="email" id="checkoutEmail" name="email" placeholder="john@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="checkoutPhone">Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="checkoutPhone" name="phone" placeholder="+1234567890" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Information Section -->
+                <div class="checkout-section-card">
+                    <h2>2. Shipping Information</h2>
+                    <div class="form-group">
+                        <label for="checkoutAddress">Street Address <span class="required">*</span></label>
+                        <input type="text" id="checkoutAddress" name="address" placeholder="123 University Campus St, Apt 4B" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="checkoutCity">City <span class="required">*</span></label>
+                            <input type="text" id="checkoutCity" name="city" placeholder="New York" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="checkoutPostalCode">Postal / Zip Code <span class="required">*</span></label>
+                            <input type="text" id="checkoutPostalCode" name="postalCode" placeholder="10001" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Section -->
+                <div class="checkout-section-card">
+                    <h2>3. Payment Method</h2>
+                    <p class="section-notice">⚠️ <strong>University Project Notice:</strong> This website uses simulated payment processing. Never enter real financial or bank card data.</p>
+                    
+                    <div class="payment-options">
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="cod" checked id="payCOD">
+                            <div class="option-details">
+                                <strong>Cash on Delivery (COD)</strong>
+                                <span>Pay with cash when your package arrives at your doorstep.</span>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="card" id="payCard">
+                            <div class="option-details">
+                                <strong>Simulated Credit / Debit Card</strong>
+                                <span>Simulate card payment (No real money processed).</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Simulated Card Fields (toggled via JS) -->
+                    <div id="simulatedCardDetails" class="card-details-box hidden">
+                        <h4>Simulated Card Information</h4>
+                        <div class="form-group">
+                            <label for="cardNumber">Card Number (Simulated)</label>
+                            <input type="text" id="cardNumber" placeholder="4000 0000 0000 0000" maxlength="19">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardExpiry">Expiration (MM/YY)</label>
+                                <input type="text" id="cardExpiry" placeholder="12/28" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="cardCvv">CVV Code</label>
+                                <input type="password" id="cardCvv" placeholder="123" maxlength="4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Order Summary & Place Order Button -->
+            <div class="checkout-summary-column">
+                <div class="checkout-summary-card">
+                    <h3>Order Summary</h3>
+                    
+                    <div class="order-items-list" id="checkoutOrderItems">
+                        <!-- Items rendered dynamically -->
+                        <div class="summary-item">
+                            <span>Pro Wireless Smartphone (x1)</span>
+                            <span>$699.99</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="checkoutSubtotal">$699.99</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping Fee</span>
+                        <span id="checkoutShipping">$15.00</span>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row total-row">
+                        <span>Final Total</span>
+                        <span id="checkoutFinalTotal">$714.99</span>
+                    </div>
+
+                    <button type="submit" id="placeOrderBtn" class="btn-success btn-full btn-large">Place Order Now 🚀</button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+</html>

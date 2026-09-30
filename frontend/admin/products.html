@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - ShopNow Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="admin-dashboard-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-header-brand">
+            <span class="logo-icon">🛡️</span>
+            <strong>ShopNow Admin</strong>
+        </div>
+        <div class="admin-header-right">
+            <span class="admin-user-tag">Logged in as: <strong id="adminSessionUsername">Administrator</strong></span>
+            <a href="../index.html" class="btn-sm btn-secondary-outline" target="_blank">View Live Store ↗</a>
+            <button id="adminLogoutBtn" class="btn-sm btn-danger-outline">Logout</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="dashboard.html">📊 Dashboard</a></li>
+                    <li><a href="products.html" class="active">📦 Product Management</a></li>
+                    <li><a href="users.html">👥 User Management</a></li>
+                    <li><a href="orders.html">🛒 Order Management</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1>Product Inventory Management</h1>
+                    <p>Add new products, modify existing product information, stock, and prices.</p>
+                </div>
+                <button id="openAddProductModalBtn" class="btn-primary">+ Add New Product</button>
+            </div>
+
+            <!-- Alert Notification Banner -->
+            <div id="productAdminAlert" class="alert-message hidden"></div>
+
+            <!-- Products Table Card -->
+            <div class="admin-card">
+                <div class="card-header-bar">
+                    <h3>All Store Products</h3>
+                    <div class="table-search-box">
+                        <input type="text" id="adminProductSearch" placeholder="Search by title or category...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table" id="adminProductsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Image</th>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Discount</th>
+                                <th>Stock</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsTableBody">
+                            <!-- Static Preview Data for HTML Phase -->
+                            <tr>
+                                <td>1</td>
+                                <td><img src="../images/phone.jpg" alt="Smartphone" class="table-thumb" onerror="this.onerror=null; this.src='https://via.placeholder.com/40';"></td>
+                                <td><strong>Pro Wireless Smartphone 128GB</strong></td>
+                                <td>Electronics</td>
+                                <td>$699.99</td>
+                                <td>15%</td>
+                                <td><span class="badge-status status-delivered">15 In Stock</span></td>
+                                <td>★ 4.5</td>
+                                <td class="table-actions-cell">
+                                    <button class="btn-sm btn-secondary edit-product-btn" data-id="1">Edit</button>
+                                    <button class="btn-sm btn-danger delete-product-btn" data-id="1">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><img src="../images/laptop.jpg" alt="Laptop" class="table-thumb" onerror="this.onerror=null; this.src='https://via.placeholder.com/40';"></td>
+                                <td><strong>UltraBook Slim 15 Pro Core i7</strong></td>
+                                <td>Laptops</td>
+                                <td>$1,199.00</td>
+                                <td>0%</td>
+                                <td><span class="badge-status status-delivered">8 In Stock</span></td>
+                                <td>★ 4.9</td>
+                                <td class="table-actions-cell">
+                                    <button class="btn-sm btn-secondary edit-product-btn" data-id="2">Edit</button>
+                                    <button class="btn-sm btn-danger delete-product-btn" data-id="2">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add / Edit Product Modal -->
+    <div id="productModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Product</h3>
+                <button type="button" id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            
+            <form id="productForm" novalidate>
+                <input type="hidden" id="productId" name="productId">
+
+                <div class="form-group">
+                    <label for="productName">Product Name <span class="required">*</span></label>
+                    <input type="text" id="productName" name="productName" placeholder="e.g. Wireless Ergonomic Mouse" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productCategorySelect">Category <span class="required">*</span></label>
+                        <select id="productCategorySelect" name="categoryId" required>
+                            <option value="1">Electronics</option>
+                            <option value="2">Laptops & Computing</option>
+                            <option value="3">Fashion & Apparel</option>
+                            <option value="4">Accessories</option>
+                            <option value="5">Home & Kitchen</option>
+                            <option value="6">Sports & Outdoor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">Price ($) <span class="required">*</span></label>
+                        <input type="number" step="0.01" id="productPrice" name="price" placeholder="49.99" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productDiscount">Discount Percentage (%)</label>
+                        <input type="number" step="1" id="productDiscount" name="discount" placeholder="0" min="0" max="100" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productStock">Stock Quantity <span class="required">*</span></label>
+                        <input type="number" id="productStock" name="stock" placeholder="25" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productRating">Rating (1 to 5)</label>
+                        <input type="number" step="0.1" id="productRating" name="rating" placeholder="4.5" min="1" max="5" value="4.5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="productImagePath">Image Relative Path or URL <span class="required">*</span></label>
+                    <input type="text" id="productImagePath" name="image" placeholder="images/mouse.jpg" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productDescription">Product Description <span class="required">*</span></label>
+                    <textarea id="productDescription" name="description" rows="4" placeholder="Detailed product features and specifications..." required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelModalBtn" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="saveProductBtn" class="btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

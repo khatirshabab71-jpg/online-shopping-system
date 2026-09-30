@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopNow - Online Shopping System</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Top Bar & Header -->
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html" id="adminPortalLink">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <!-- Brand Logo -->
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+
+                <!-- Search Bar -->
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form" id="globalSearchForm">
+                        <input type="text" name="search" id="searchInput" placeholder="Search for electronics, laptops, phones..." required>
+                        <button type="submit" id="searchBtn">Search</button>
+                    </form>
+                </div>
+
+                <!-- User Navigation & Cart -->
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link" id="loginLink">Login</a>
+                        <a href="register.html" class="btn-primary" id="registerLink">Register</a>
+                    </div>
+                    
+                    <a href="cart.html" class="cart-badge-link" id="cartHeaderBadge">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Navigation Bar -->
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="products.html?category=electronics">Electronics</a></li>
+                    <li><a href="products.html?category=fashion">Fashion</a></li>
+                    <li><a href="products.html?category=laptops">Laptops</a></li>
+                    <li><a href="products.html?category=phones">Mobile Phones</a></li>
+                    <li><a href="products.html?category=accessories">Accessories</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-banner">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <span class="hero-tag">Special University Tech Deal</span>
+                    <h1>Experience Modern Online Shopping</h1>
+                    <p>Discover top-tier electronics, laptops, fashion, and accessories at unbeatable discounts.</p>
+                    <div class="hero-buttons">
+                        <a href="products.html" class="btn-hero-primary">Shop Now</a>
+                        <a href="products.html?discount=true" class="btn-hero-secondary">View Deals</a>
+                    </div>
+                </div>
+                <div class="hero-image-placeholder">
+                    <div class="hero-card-preview">
+                        <span class="hero-badge">Up to 40% OFF</span>
+                        <h3>Premium Gadgets & Appliances</h3>
+                        <p>Built with Pure Vanilla Web Technologies</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Categories Section -->
+        <section class="section categories-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Browse Categories</h2>
+                    <p>Explore products by your favorite categories</p>
+                </div>
+
+                <div class="categories-grid" id="categoriesContainer">
+                    <a href="products.html?category=1" class="category-card">
+                        <span class="category-icon">📱</span>
+                        <h3>Electronics</h3>
+                        <p>Smartphones, Tablets & Audio</p>
+                    </a>
+                    <a href="products.html?category=2" class="category-card">
+                        <span class="category-icon">💻</span>
+                        <h3>Laptops & Computing</h3>
+                        <p>High Performance Laptops</p>
+                    </a>
+                    <a href="products.html?category=3" class="category-card">
+                        <span class="category-icon">👕</span>
+                        <h3>Fashion & Apparel</h3>
+                        <p>Clothing, Shoes & Styles</p>
+                    </a>
+                    <a href="products.html?category=4" class="category-card">
+                        <span class="category-icon">🎧</span>
+                        <h3>Accessories</h3>
+                        <p>Watches, Headphones & Gear</p>
+                    </a>
+                    <a href="products.html?category=5" class="category-card">
+                        <span class="category-icon">🏡</span>
+                        <h3>Home & Kitchen</h3>
+                        <p>Modern Living Essentials</p>
+                    </a>
+                    <a href="products.html?category=6" class="category-card">
+                        <span class="category-icon">⚽</span>
+                        <h3>Sports & Outdoor</h3>
+                        <p>Fitness, Apparel & Gear</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products Section -->
+        <section class="section products-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Featured Products</h2>
+                    <a href="products.html" class="view-all-link">View All Products &rarr;</a>
+                </div>
+
+                <div class="product-grid" id="featuredProductsGrid">
+                    <!-- Static Preview Product 1 -->
+                    <div class="product-card">
+                        <div class="product-badge">15% OFF</div>
+                        <div class="product-image-box">
+                            <img src="images/phone.jpg" alt="Pro Wireless Smartphone" onerror="this.onerror=null; this.src='https://via.placeholder.com/250x200?text=Smartphone';">
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">Electronics</span>
+                            <h3 class="product-title"><a href="product-details.html?id=1">Pro Wireless Smartphone 128GB</a></h3>
+                            <div class="product-rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="rating-val">(4.5)</span>
+                            </div>
+                            <div class="product-price-box">
+                                <span class="current-price">$699.99</span>
+                                <span class="original-price">$819.99</span>
+                            </div>
+                            <div class="product-actions">
+                                <a href="product-details.html?id=1" class="btn-secondary">Details</a>
+                                <button class="btn-add-cart" data-id="1">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Static Preview Product 2 -->
+                    <div class="product-card">
+                        <div class="product-badge badge-new">NEW</div>
+                        <div class="product-image-box">
+                            <img src="images/laptop.jpg" alt="UltraBook Slim 15" onerror="this.onerror=null; this.src='https://via.placeholder.com/250x200?text=Laptop';">
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">Laptops</span>
+                            <h3 class="product-title"><a href="product-details.html?id=2">UltraBook Slim 15 Pro Core i7</a></h3>
+                            <div class="product-rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="rating-val">(4.9)</span>
+                            </div>
+                            <div class="product-price-box">
+                                <span class="current-price">$1,199.00</span>
+                            </div>
+                            <div class="product-actions">
+                                <a href="product-details.html?id=2" class="btn-secondary">Details</a>
+                                <button class="btn-add-cart" data-id="2">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Static Preview Product 3 -->
+                    <div class="product-card">
+                        <div class="product-badge">20% OFF</div>
+                        <div class="product-image-box">
+                            <img src="images/headphones.jpg" alt="Noise Cancelling Headphones" onerror="this.onerror=null; this.src='https://via.placeholder.com/250x200?text=Headphones';">
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">Accessories</span>
+                            <h3 class="product-title"><a href="product-details.html?id=3">Active Noise Cancelling Wireless Headphones</a></h3>
+                            <div class="product-rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="rating-val">(4.2)</span>
+                            </div>
+                            <div class="product-price-box">
+                                <span class="current-price">$149.99</span>
+                                <span class="original-price">$189.99</span>
+                            </div>
+                            <div class="product-actions">
+                                <a href="product-details.html?id=3" class="btn-secondary">Details</a>
+                                <button class="btn-add-cart" data-id="3">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Static Preview Product 4 -->
+                    <div class="product-card">
+                        <div class="product-image-box">
+                            <img src="images/watch.jpg" alt="Smart Fitness Watch" onerror="this.onerror=null; this.src='https://via.placeholder.com/250x200?text=Smartwatch';">
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">Accessories</span>
+                            <h3 class="product-title"><a href="product-details.html?id=4">Smart Fitness Watch Series 5</a></h3>
+                            <div class="product-rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="rating-val">(4.6)</span>
+                            </div>
+                            <div class="product-price-box">
+                                <span class="current-price">$89.99</span>
+                            </div>
+                            <div class="product-actions">
+                                <a href="product-details.html?id=4" class="btn-secondary">Details</a>
+                                <button class="btn-add-cart" data-id="4">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Special Discounted Deals Section -->
+        <section class="section deals-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Hot Special Deals</h2>
+                    <p>Exclusive discounts on top-rated items</p>
+                </div>
+                <div class="product-grid" id="discountProductsGrid">
+                    <!-- Additional Cards Populated Dynamically or Previewed -->
+                </div>
+            </div>
+        </section>
+
+        <!-- New Arrivals Section -->
+        <section class="section new-arrivals-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>New Arrivals</h2>
+                    <p>Check out our latest stock additions</p>
+                </div>
+                <div class="product-grid" id="newProductsGrid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-content">
+            <div class="footer-col">
+                <h3>About ShopNow</h3>
+                <p>ShopNow is an Online Shopping System developed as a University Software Engineering Project. Built using pure HTML5, CSS3, Vanilla JS, Python, and MySQL.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="cart.html">Shopping Cart</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Customer Account</h3>
+                <ul>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                    <li><a href="admin/login.html">Admin Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Contact & Info</h3>
+                <p>Email: support@shopnow.edu</p>
+                <p>Phone: +1 (800) 555-SHOP</p>
+                <p>University Software Engineering Lab</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>

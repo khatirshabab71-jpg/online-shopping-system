@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - ShopNow Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="admin-body">
+    <div class="admin-login-wrapper">
+        <div class="admin-login-card">
+            <div class="admin-brand">
+                <span class="logo-icon">🛡️</span>
+                <h2>ShopNow Admin Panel</h2>
+                <p>Authorized Administrator Access Only</p>
+            </div>
+
+            <div id="adminAlert" class="alert-message hidden"></div>
+
+            <form id="adminLoginForm" class="admin-form" novalidate>
+                <div class="form-group">
+                    <label for="adminUsername">Admin Username <span class="required">*</span></label>
+                    <input type="text" id="adminUsername" name="username" placeholder="Enter admin username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPassword">Password <span class="required">*</span></label>
+                    <input type="password" id="adminPassword" name="password" placeholder="Enter admin password" required>
+                </div>
+
+                <button type="submit" id="adminLoginBtn" class="btn-primary btn-full">Login to Admin Portal</button>
+
+                <div class="admin-login-footer">
+                    <a href="../index.html">&larr; Return to Customer Storefront</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

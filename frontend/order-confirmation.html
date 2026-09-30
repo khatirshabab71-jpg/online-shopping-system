@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <div class="confirmation-wrapper">
+            <div class="confirmation-card">
+                <div class="confirmation-icon">🎉</div>
+                <h1 class="confirmation-title">Order placed successfully!</h1>
+                <p class="confirmation-subtitle">Thank you for your order. We have received your order details and are preparing it for processing.</p>
+
+                <!-- Order Details Summary Box -->
+                <div class="order-receipt-box" id="orderReceipt">
+                    <div class="receipt-header">
+                        <div>
+                            <span>Order Number:</span>
+                            <strong id="confirmOrderId">#ORD-10024</strong>
+                        </div>
+                        <div>
+                            <span>Order Date:</span>
+                            <strong id="confirmOrderDate">2026-09-13</strong>
+                        </div>
+                        <div>
+                            <span>Status:</span>
+                            <span class="badge-status status-pending" id="confirmOrderStatus">Pending</span>
+                        </div>
+                    </div>
+
+                    <div class="receipt-section">
+                        <h3>Customer Information</h3>
+                        <p><strong>Customer Name:</strong> <span id="confirmCustomerName">John Doe</span></p>
+                        <p><strong>Shipping Address:</strong> <span id="confirmShippingAddress">123 University Campus St, Apt 4B, New York, 10001</span></p>
+                        <p><strong>Payment Method:</strong> <span id="confirmPaymentMethod">Cash on Delivery</span></p>
+                    </div>
+
+                    <div class="receipt-section">
+                        <h3>Items Ordered</h3>
+                        <table class="receipt-table">
+                            <thead>
+                                <tr>
+                                    <th>Item Description</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="confirmItemsList">
+                                <tr>
+                                    <td>Pro Wireless Smartphone 128GB</td>
+                                    <td>1</td>
+                                    <td>$699.99</td>
+                                    <td>$699.99</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="receipt-footer">
+                        <div class="receipt-total-row">
+                            <span>Total Amount Paid / Due:</span>
+                            <strong id="confirmTotalAmount">$714.99</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirmation-actions">
+                    <a href="orders.html" class="btn-primary">View My Orders History</a>
+                    <a href="products.html" class="btn-secondary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+</html>

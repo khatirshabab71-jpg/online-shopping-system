@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ShopNow</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="admin-dashboard-body">
+    <!-- Admin Top Header Bar -->
+    <header class="admin-header">
+        <div class="admin-header-brand">
+            <span class="logo-icon">🛡️</span>
+            <strong>ShopNow Admin</strong>
+        </div>
+        <div class="admin-header-right">
+            <span class="admin-user-tag">Logged in as: <strong id="adminSessionUsername">Administrator</strong></span>
+            <a href="../index.html" class="btn-sm btn-secondary-outline" target="_blank">View Live Store ↗</a>
+            <button id="adminLogoutBtn" class="btn-sm btn-danger-outline">Logout</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
+                    <li><a href="products.html">📦 Product Management</a></li>
+                    <li><a href="users.html">👥 User Management</a></li>
+                    <li><a href="orders.html">🛒 Order Management</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <div class="admin-page-title">
+                <h1>System Overview & Metrics</h1>
+                <p>Real-time analytics and management statistics for ShopNow</p>
+            </div>
+
+            <!-- Key Performance Metrics Cards -->
+            <div class="metrics-grid">
+                <!-- Total Products Card -->
+                <div class="metric-card card-primary">
+                    <div class="metric-icon">📦</div>
+                    <div class="metric-data">
+                        <span class="metric-title">Total Products</span>
+                        <h2 id="statTotalProducts">24</h2>
+                        <span class="metric-sub">Active items in store</span>
+                    </div>
+                </div>
+
+                <!-- Total Users Card -->
+                <div class="metric-card card-info">
+                    <div class="metric-icon">👥</div>
+                    <div class="metric-data">
+                        <span class="metric-title">Total Users</span>
+                        <h2 id="statTotalUsers">158</h2>
+                        <span class="metric-sub">Registered accounts</span>
+                    </div>
+                </div>
+
+                <!-- Total Orders Card -->
+                <div class="metric-card card-success">
+                    <div class="metric-icon">🛒</div>
+                    <div class="metric-data">
+                        <span class="metric-title">Total Orders</span>
+                        <h2 id="statTotalOrders">86</h2>
+                        <span class="metric-sub">All-time customer orders</span>
+                    </div>
+                </div>
+
+                <!-- Total Sales Card -->
+                <div class="metric-card card-gold">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-data">
+                        <span class="metric-title">Total Revenue</span>
+                        <h2 id="statTotalSales">$42,850.00</h2>
+                        <span class="metric-sub">Completed order total</span>
+                    </div>
+                </div>
+
+                <!-- Pending Orders Card -->
+                <div class="metric-card card-warning">
+                    <div class="metric-icon">⏳</div>
+                    <div class="metric-data">
+                        <span class="metric-title">Pending Orders</span>
+                        <h2 id="statPendingOrders">5</h2>
+                        <span class="metric-sub">Requires fulfillment</span>
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert Card -->
+                <div class="metric-card card-danger">
+                    <div class="metric-icon">⚠️</div>
+                    <div class="metric-data">
+                        <span class="metric-title">Low-Stock Items</span>
+                        <h2 id="statLowStock">3</h2>
+                        <span class="metric-sub">Stock level below 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Pure CSS Analytics & Quick Access Grid -->
+            <div class="dashboard-panels-grid">
+                <!-- Sales by Category (Pure CSS Bar Chart) -->
+                <div class="admin-panel-card">
+                    <h3>Category Inventory Distribution</h3>
+                    <p class="panel-desc">Visual Breakdown of Products across Categories</p>
+                    
+                    <div class="chart-bars-list">
+                        <div class="chart-item">
+                            <div class="chart-label">Electronics</div>
+                            <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 85%;">8 Items</div></div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">Laptops</div>
+                            <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 60%;">5 Items</div></div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">Fashion</div>
+                            <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 45%;">4 Items</div></div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">Accessories</div>
+                            <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 70%;">6 Items</div></div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-label">Home & Kitchen</div>
+                            <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 30%;">3 Items</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Panel -->
+                <div class="admin-panel-card">
+                    <h3>Quick Administration Actions</h3>
+                    <p class="panel-desc">Fast shortcuts for store managers</p>
+
+                    <div class="quick-actions-list">
+                        <a href="products.html?action=add" class="quick-btn btn-primary">+ Add New Product</a>
+                        <a href="orders.html?status=pending" class="quick-btn btn-warning">View Pending Orders</a>
+                        <a href="users.html" class="quick-btn btn-secondary">Manage Registered Customers</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

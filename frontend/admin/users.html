@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - ShopNow Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="admin-dashboard-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-header-brand">
+            <span class="logo-icon">🛡️</span>
+            <strong>ShopNow Admin</strong>
+        </div>
+        <div class="admin-header-right">
+            <span class="admin-user-tag">Logged in as: <strong id="adminSessionUsername">Administrator</strong></span>
+            <a href="../index.html" class="btn-sm btn-secondary-outline" target="_blank">View Live Store ↗</a>
+            <button id="adminLogoutBtn" class="btn-sm btn-danger-outline">Logout</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="dashboard.html">📊 Dashboard</a></li>
+                    <li><a href="products.html">📦 Product Management</a></li>
+                    <li><a href="users.html" class="active">👥 User Management</a></li>
+                    <li><a href="orders.html">🛒 Order Management</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1>Registered Customers List</h1>
+                    <p>View registered user account details and registration timestamps.</p>
+                </div>
+            </div>
+
+            <!-- Users Table Card -->
+            <div class="admin-card">
+                <div class="card-header-bar">
+                    <h3>Customer Directory</h3>
+                    <div class="table-search-box">
+                        <input type="text" id="adminUserSearch" placeholder="Search customer name or email...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table" id="adminUsersTable">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Customer Name</th>
+                                <th>Email Address</th>
+                                <th>Phone Number</th>
+                                <th>Shipping Address</th>
+                                <th>Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTableBody">
+                            <!-- Static Preview Data for HTML Phase -->
+                            <tr>
+                                <td>#USR-101</td>
+                                <td><strong>John Doe</strong></td>
+                                <td>john@example.com</td>
+                                <td>+1 555-0192</td>
+                                <td>123 University Campus St, Apt 4B, NY</td>
+                                <td>2026-09-01 10:15</td>
+                            </tr>
+                            <tr>
+                                <td>#USR-102</td>
+                                <td><strong>Jane Smith</strong></td>
+                                <td>jane.smith@university.edu</td>
+                                <td>+1 555-0144</td>
+                                <td>456 Tech Park Boulevard, Suite 12</td>
+                                <td>2026-09-05 14:30</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

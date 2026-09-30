@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link active">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <div class="page-header">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> &gt; <span>Shopping Cart</span>
+            </div>
+            <h1>Your Shopping Cart</h1>
+            <p>Review items in your cart before proceeding to checkout</p>
+        </div>
+
+        <div class="cart-layout" id="cartLayout">
+            <!-- Cart Items Table Section -->
+            <div class="cart-table-wrapper">
+                <table class="cart-table" id="cartTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartTableBody">
+                        <!-- Dynamic items or static sample preview -->
+                        <tr>
+                            <td class="product-cell">
+                                <img src="images/phone.jpg" alt="Pro Wireless Smartphone" onerror="this.onerror=null; this.src='https://via.placeholder.com/80x80?text=Phone';">
+                                <div class="product-cell-info">
+                                    <a href="product-details.html?id=1" class="product-name">Pro Wireless Smartphone 128GB</a>
+                                    <span class="product-category-sm">Electronics</span>
+                                </div>
+                            </td>
+                            <td class="price-cell">$699.99</td>
+                            <td class="qty-cell">
+                                <div class="qty-control-inline">
+                                    <button type="button" class="btn-qty-sm">-</button>
+                                    <input type="number" value="1" min="1" max="50">
+                                    <button type="button" class="btn-qty-sm">+</button>
+                                </div>
+                            </td>
+                            <td class="subtotal-cell">$699.99</td>
+                            <td class="action-cell">
+                                <button class="btn-delete-item" title="Remove item">🗑️ Remove</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="cart-actions-bar">
+                    <a href="products.html" class="btn-secondary">&larr; Continue Shopping</a>
+                    <button id="clearCartBtn" class="btn-danger-outline">Clear Entire Cart</button>
+                </div>
+            </div>
+
+            <!-- Cart Summary Box -->
+            <div class="cart-summary-card">
+                <h3>Order Summary</h3>
+                
+                <div class="summary-row">
+                    <span>Total Items:</span>
+                    <span id="summaryTotalItems">1 product(s)</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="summarySubtotal">$699.99</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Estimated Shipping:</span>
+                    <span id="summaryShipping">$15.00</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-row total-row">
+                    <span>Total Amount:</span>
+                    <span id="summaryTotalAmount">$714.99</span>
+                </div>
+
+                <a href="checkout.html" id="checkoutBtn" class="btn-primary btn-full btn-large">Proceed to Checkout &rarr;</a>
+
+                <div class="summary-guarantee">
+                    <p>🔒 100% Safe & Simulated Secure Checkout</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty Cart Message State -->
+        <div id="emptyCartView" class="empty-state hidden">
+            <div class="empty-icon">🛒</div>
+            <h2>Your cart is currently empty.</h2>
+            <p>Looks like you haven't added any products to your shopping cart yet.</p>
+            <a href="products.html" class="btn-primary">Browse Products Now</a>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>

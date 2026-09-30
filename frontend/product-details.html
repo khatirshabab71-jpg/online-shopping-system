@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <!-- Breadcrumb navigation -->
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> &gt; <a href="products.html">Products</a> &gt; <span id="breadcrumbProductName">Product Details</span>
+        </div>
+
+        <!-- Product Details Container -->
+        <div class="product-details-container" id="productDetailsContainer">
+            <!-- Left Side: Product Image -->
+            <div class="product-details-image-box">
+                <div class="product-detail-badge hidden" id="productDiscountBadge">-15%</div>
+                <img id="productImage" src="images/phone.jpg" alt="Product Image" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x400?text=Product+Image';">
+            </div>
+
+            <!-- Right Side: Details & Actions -->
+            <div class="product-details-info">
+                <span class="category-tag" id="productCategory">Electronics</span>
+                <h1 id="productTitle">Pro Wireless Smartphone 128GB</h1>
+                
+                <div class="product-rating-box">
+                    <span class="stars" id="productStars">★★★★☆</span>
+                    <span class="rating-text" id="productRatingVal">4.5 Rating</span>
+                </div>
+
+                <div class="price-section">
+                    <span class="current-detail-price" id="productPrice">$699.99</span>
+                    <span class="original-detail-price hidden" id="productOriginalPrice">$819.99</span>
+                </div>
+
+                <div class="stock-status-box">
+                    <span class="stock-label">Availability:</span>
+                    <span class="stock-status in-stock" id="productStockStatus">In Stock (15 items left)</span>
+                </div>
+
+                <div class="product-description">
+                    <h3>Description</h3>
+                    <p id="productDescription">Experience cutting-edge smartphone technology with high-resolution camera system, long-lasting battery, and superfast processing power. Perfect for students and professionals alike.</p>
+                </div>
+
+                <div class="purchase-actions">
+                    <div class="quantity-picker">
+                        <label for="quantityInput">Quantity:</label>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-qty" id="decreaseQtyBtn">-</button>
+                            <input type="number" id="quantityInput" value="1" min="1" max="100">
+                            <button type="button" class="btn-qty" id="increaseQtyBtn">+</button>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="addToCartBtn" class="btn-primary btn-large">Add to Cart 🛒</button>
+                        <button id="buyNowBtn" class="btn-success btn-large">Buy Now ⚡</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products Section -->
+        <section class="section related-products">
+            <h2>You May Also Like</h2>
+            <div class="product-grid" id="relatedProductsGrid">
+                <!-- Related products will load here -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>

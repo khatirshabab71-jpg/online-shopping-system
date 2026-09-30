@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html" class="active">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <div class="page-header">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> &gt; <span>User Profile</span>
+            </div>
+            <h1>Account Profile</h1>
+            <p>Manage your account personal details and default shipping address</p>
+        </div>
+
+        <div class="profile-layout">
+            <!-- Sidebar User Quick Info Card -->
+            <div class="profile-sidebar-card">
+                <div class="profile-avatar">👤</div>
+                <h2 id="sidebarProfileName">John Doe</h2>
+                <p id="sidebarProfileEmail">john@example.com</p>
+                <div class="profile-stats">
+                    <div class="stat-box">
+                        <strong id="userTotalOrdersCount">2</strong>
+                        <span>Total Orders</span>
+                    </div>
+                    <div class="stat-box">
+                        <span>Member Since</span>
+                        <strong>2026</strong>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn-danger-outline btn-full" style="margin-top: 20px;">Logout of Account</button>
+            </div>
+
+            <!-- Main Profile Edit Form -->
+            <div class="profile-form-card">
+                <h2>Edit Personal Information</h2>
+                
+                <div id="profileAlert" class="alert-message hidden"></div>
+
+                <form id="profileForm" novalidate>
+                    <div class="form-group">
+                        <label for="profileFullName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="profileFullName" name="fullName" value="John Doe" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="profileEmail">Email Address (Read-only)</label>
+                            <input type="email" id="profileEmail" name="email" value="john@example.com" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="profilePhone">Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="profilePhone" name="phone" value="+1234567890" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profileAddress">Default Shipping Address <span class="required">*</span></label>
+                        <textarea id="profileAddress" name="address" rows="3" required>123 University Campus St, Apt 4B, New York, NY 10001</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profileNewPassword">New Password (Leave blank to keep current)</label>
+                        <input type="password" id="profileNewPassword" name="newPassword" placeholder="Enter new password">
+                    </div>
+
+                    <button type="submit" id="updateProfileBtn" class="btn-primary btn-large">Update Profile Settings</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Project Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

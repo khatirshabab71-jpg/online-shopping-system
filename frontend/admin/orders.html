@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - ShopNow Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="admin-dashboard-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-header-brand">
+            <span class="logo-icon">🛡️</span>
+            <strong>ShopNow Admin</strong>
+        </div>
+        <div class="admin-header-right">
+            <span class="admin-user-tag">Logged in as: <strong id="adminSessionUsername">Administrator</strong></span>
+            <a href="../index.html" class="btn-sm btn-secondary-outline" target="_blank">View Live Store ↗</a>
+            <button id="adminLogoutBtn" class="btn-sm btn-danger-outline">Logout</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="dashboard.html">📊 Dashboard</a></li>
+                    <li><a href="products.html">📦 Product Management</a></li>
+                    <li><a href="users.html">👥 User Management</a></li>
+                    <li><a href="orders.html" class="active">🛒 Order Management</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1>Customer Orders Management</h1>
+                    <p>Track customer purchases, update order fulfillment status, and view detailed invoices.</p>
+                </div>
+            </div>
+
+            <!-- Alert Message Banner -->
+            <div id="orderAdminAlert" class="alert-message hidden"></div>
+
+            <!-- Orders Filter & Table Card -->
+            <div class="admin-card">
+                <div class="card-header-bar">
+                    <h3>All Orders</h3>
+                    <div class="filter-controls-row">
+                        <select id="adminOrderStatusFilter">
+                            <option value="all">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <input type="text" id="adminOrderSearch" placeholder="Search order ID or customer...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table" id="adminOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer Name</th>
+                                <th>Order Date</th>
+                                <th>Total Amount</th>
+                                <th>Payment Method</th>
+                                <th>Current Status</th>
+                                <th>Update Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTableBody">
+                            <!-- Static Preview Data for HTML Phase -->
+                            <tr>
+                                <td><strong>#ORD-10024</strong></td>
+                                <td>John Doe</td>
+                                <td>2026-09-13</td>
+                                <td>$714.99</td>
+                                <td>Cash on Delivery</td>
+                                <td><span class="badge-status status-pending">Pending</span></td>
+                                <td>
+                                    <select class="status-select-inline" data-order-id="10024">
+                                        <option value="Pending" selected>Pending</option>
+                                        <option value="Confirmed">Confirmed</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Delivered">Delivered</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn-sm btn-secondary view-order-details-btn" data-order-id="10024">Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>#ORD-10018</strong></td>
+                                <td>Jane Smith</td>
+                                <td>2026-09-01</td>
+                                <td>$149.99</td>
+                                <td>Simulated Card</td>
+                                <td><span class="badge-status status-delivered">Delivered</span></td>
+                                <td>
+                                    <select class="status-select-inline" data-order-id="10018">
+                                        <option value="Pending">Pending</option>
+                                        <option value="Confirmed">Confirmed</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Delivered" selected>Delivered</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn-sm btn-secondary view-order-details-btn" data-order-id="10018">Details</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderDetailsModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Order Inspection Details - <span id="modalOrderId">#ORD-10024</span></h3>
+                <button type="button" id="closeOrderModalBtn" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="order-info-grid">
+                    <div>
+                        <p><strong>Customer:</strong> <span id="modalCustomerName">John Doe</span></p>
+                        <p><strong>Email:</strong> <span id="modalCustomerEmail">john@example.com</span></p>
+                        <p><strong>Phone:</strong> <span id="modalCustomerPhone">+1234567890</span></p>
+                    </div>
+                    <div>
+                        <p><strong>Shipping Address:</strong> <span id="modalShippingAddress">123 University Campus St, Apt 4B</span></p>
+                        <p><strong>Payment Method:</strong> <span id="modalPaymentMethod">Cash on Delivery</span></p>
+                        <p><strong>Order Status:</strong> <span id="modalOrderStatus" class="badge-status status-pending">Pending</span></p>
+                    </div>
+                </div>
+
+                <h4>Ordered Line Items</h4>
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalOrderItemsBody">
+                        <tr>
+                            <td>Pro Wireless Smartphone 128GB</td>
+                            <td>1</td>
+                            <td>$699.99</td>
+                            <td>$699.99</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="closeOrderModalBottomBtn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>
