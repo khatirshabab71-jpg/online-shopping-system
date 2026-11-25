@@ -132,16 +132,27 @@ class ShopNowRequestHandler(BaseHTTPRequestHandler):
         path = parsed_url.path
 
         # Read JSON body payload
-        content_length = int(self.headers.get('Content-Length', 0))
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+        except ValueError:
+            self._send_json({'success': False, 'message': 'Invalid content length'}, 400)
+            return
+        if content_length < 0 or content_length > 1024 * 1024:
+            self._send_json({'success': False, 'message': 'Invalid request size'}, 413)
+            return
         post_data = {}
 
         if content_length > 0:
             body_bytes = self.rfile.read(content_length)
             try:
                 post_data = json.loads(body_bytes.decode('utf-8'))
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, UnicodeDecodeError):
                 self._send_json({'success': False, 'message': 'Invalid JSON format in request body'}, 400)
                 return
+
+        if not isinstance(post_data, dict):
+            self._send_json({'success': False, 'message': 'JSON body must be an object'}, 400)
+            return
 
         if path.startswith('/api/'):
             self._handle_api_post(path, post_data)

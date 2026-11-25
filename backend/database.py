@@ -67,7 +67,7 @@ def execute_query(query, params=(), fetchone=False, fetchall=False, commit=False
         conn.close()
         return result
     except Exception as err:
-        print(f"Database Query Error: {err}\nQuery: {query}\nParams: {params}")
+        print(f"Database query failed ({type(err).__name__})")
         if conn:
             try:
                 conn.rollback()

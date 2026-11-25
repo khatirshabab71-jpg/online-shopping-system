@@ -13,7 +13,7 @@ from email.mime.text import MIMEText
 from config import (
     SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, 
     SMTP_USE_TLS, SMTP_FROM_EMAIL, SMTP_FROM_NAME, 
-    APP_URL, LOGS_DIR
+    APP_URL, LOGS_DIR, IS_VERCEL
 )
 
 # Ensure logs directory exists
@@ -24,6 +24,8 @@ def _log_email_outbox(to_email, subject, body_summary):
     """
     Records outbound email into local outbox log for auditing and when SMTP is offline.
     """
+    if IS_VERCEL:
+        return  # Do not write email bodies or account tokens to cloud logs.
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     log_entry = f"[{timestamp}] TO: {to_email} | SUBJECT: {subject}\nSUMMARY:\n{body_summary}\n{'-'*70}\n"
     try:
@@ -42,7 +44,7 @@ def _send_smtp_worker(to_email, subject, html_body, text_body):
 
     # 2. Check if real SMTP server is configured
     if not SMTP_HOST or not SMTP_USER:
-        print(f"[Email Service] SMTP not configured. Logged to outbox: '{subject}' -> {to_email}")
+        print(f"[Email Service] SMTP not configured. Delivery skipped: '{subject}' -> {to_email}")
         return
 
     try:
@@ -72,6 +74,10 @@ def send_email_async(to_email: str, subject: str, html_body: str, text_body: str
     """
     Spawns a detached background thread to send email without delaying API responses.
     """
+    if IS_VERCEL:
+        # Finish the SMTP attempt before the function response ends.
+        _send_smtp_worker(to_email, subject, html_body, text_body)
+        return
     thread = threading.Thread(
         target=_send_smtp_worker,
         args=(to_email, subject, html_body, text_body),

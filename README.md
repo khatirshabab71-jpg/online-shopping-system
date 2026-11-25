@@ -1,3 +1,5 @@
+> For Vercel, follow [VERCEL_SETUP.md](VERCEL_SETUP.md). The original instructions below describe local operation.
+
 # ShopNow - Online Shopping System (Phase 2 Production MVP)
 
 > **Final Semester Software Engineering Project**  

@@ -1,0 +1,7 @@
+backend/logs/
+**/__pycache__/
+.env
+.env.*
+!.env.example
+database/
+*.zip

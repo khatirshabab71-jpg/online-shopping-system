@@ -4,6 +4,9 @@ Backend Configuration Module (Phase 2 Production Ready)
 """
 
 import os
+import tempfile
+
+IS_VERCEL = os.environ.get("VERCEL") == "1"
 
 # Server Network Settings
 SERVER_HOST = os.environ.get('SERVER_HOST', '0.0.0.0')
@@ -36,8 +39,21 @@ DB_CONFIG = {
     'password': DB_PASSWORD,
     'database': DB_NAME,
     'port': DB_PORT,
-    'raise_on_warnings': True
+    'raise_on_warnings': True,
+    'connection_timeout': 8
 }
+
+# Remote MySQL TLS. Supply the CA certificate PEM in DB_SSL_CA_PEM on Vercel.
+if IS_VERCEL or os.environ.get('DB_SSL_VERIFY', 'false').lower() == 'true':
+    DB_CONFIG.update(ssl_disabled=False, ssl_verify_cert=True, ssl_verify_identity=True)
+    ca_pem = os.environ.get('DB_SSL_CA_PEM', '')
+    ca_file = os.environ.get('DB_SSL_CA', '')
+    if ca_pem:
+        ca_file = os.path.join(tempfile.gettempdir(), 'shopnow-mysql-ca.pem')
+        with open(ca_file, 'w', encoding='utf-8') as cert_file:
+            cert_file.write(ca_pem.replace('\\n', '\n'))
+    if ca_file:
+        DB_CONFIG['ssl_ca'] = ca_file
 
 # SMTP Email Configuration
 SMTP_HOST = os.environ.get('SMTP_HOST', '')
@@ -51,7 +67,7 @@ SMTP_FROM_NAME = os.environ.get('SMTP_FROM_NAME', 'ShopNow Online Store')
 # Base Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
-LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+LOGS_DIR = os.path.join(tempfile.gettempdir(), 'shopnow-logs') if IS_VERCEL else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
 
 # Shipping Configuration
 FIXED_SHIPPING_FEE = 15.00
