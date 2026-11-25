@@ -1,6 +1,7 @@
 /**
  * ShopNow - Online Shopping System
  * Checkout Validation, Payment Simulation & Receipt Confirmation Script
+ * Connects directly to Python backend API & MySQL database.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,72 +10,75 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Handle Checkout Page Setup, Validation & Placement
+ * Handle Checkout Page Setup, Validation & Order Placement
  */
-function initCheckoutPage() {
+async function initCheckoutPage() {
     const checkoutForm = document.getElementById('checkoutForm');
     if (!checkoutForm) return;
 
-    const cart = getCart();
-    if (cart.length === 0) {
+    if (!getAuthToken()) {
+        alert('Please log in to your account before proceeding to checkout.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 1. Fetch current cart from MySQL
+    const cartRes = await apiFetch('/cart');
+    if (!cartRes || !cartRes.success || !cartRes.cart || cartRes.cart.items.length === 0) {
         alert('Your shopping cart is empty. Please add items before checking out.');
         window.location.href = 'products.html';
         return;
     }
 
-    // Pre-fill user information if logged in
-    const user = getCurrentUser();
-    if (user) {
-        document.getElementById('checkoutName').value = user.name || '';
-        document.getElementById('checkoutEmail').value = user.email || '';
-        document.getElementById('checkoutPhone').value = user.phone || '';
-        document.getElementById('checkoutAddress').value = user.address || '';
+    const cart = cartRes.cart;
+
+    // 2. Pre-fill customer details from database profile
+    const profileRes = await apiFetch('/me');
+    if (profileRes && profileRes.success && profileRes.user) {
+        const u = profileRes.user;
+        const nameField = document.getElementById('checkoutName');
+        const emailField = document.getElementById('checkoutEmail');
+        const phoneField = document.getElementById('checkoutPhone');
+        const addressField = document.getElementById('checkoutAddress');
+
+        if (nameField) nameField.value = u.name || '';
+        if (emailField) emailField.value = u.email || '';
+        if (phoneField) phoneField.value = u.phone || '';
+        if (addressField) addressField.value = u.address || '';
     }
 
-    // Render Order Summary Items
+    // 3. Render Order Summary Items
     const itemsList = document.getElementById('checkoutOrderItems');
-    let subtotal = 0;
-
     if (itemsList) {
         itemsList.innerHTML = '';
-        cart.forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            subtotal += itemTotal;
-
+        cart.items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'summary-item';
             div.innerHTML = `
-                <span>${item.product_name} (x${item.quantity})</span>
-                <strong>${formatCurrency(itemTotal)}</strong>
+                <span>${escapeHTML(item.name)} (x${item.quantity})</span>
+                <strong>${formatCurrency(item.line_total)}</strong>
             `;
             itemsList.appendChild(div);
         });
     }
 
     const shippingFee = 15.00;
-    const finalTotal = subtotal + shippingFee;
+    const finalTotal = cart.subtotal + shippingFee;
 
-    document.getElementById('checkoutSubtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('checkoutShipping').textContent = formatCurrency(shippingFee);
-    document.getElementById('checkoutFinalTotal').textContent = formatCurrency(finalTotal);
+    const subtotalEl = document.getElementById('checkoutSubtotal');
+    const shippingEl = document.getElementById('checkoutShipping');
+    const finalTotalEl = document.getElementById('checkoutFinalTotal');
 
-    // Toggle Payment Options (Cash on Delivery vs Simulated Card)
+    if (subtotalEl) subtotalEl.textContent = formatCurrency(cart.subtotal);
+    if (shippingEl) shippingEl.textContent = formatCurrency(shippingFee);
+    if (finalTotalEl) finalTotalEl.textContent = formatCurrency(finalTotal);
+
+    // Keep Cash on Delivery selected for MVP
     const payCOD = document.getElementById('payCOD');
-    const payCard = document.getElementById('payCard');
-    const simulatedCardDetails = document.getElementById('simulatedCardDetails');
+    if (payCOD) payCOD.checked = true;
 
-    if (payCOD && payCard && simulatedCardDetails) {
-        payCOD.addEventListener('change', () => {
-            if (payCOD.checked) simulatedCardDetails.classList.add('hidden');
-        });
-
-        payCard.addEventListener('change', () => {
-            if (payCard.checked) simulatedCardDetails.classList.remove('hidden');
-        });
-    }
-
-    // Checkout Submission Event
-    checkoutForm.addEventListener('submit', (e) => {
+    // 4. Handle Form Submit
+    checkoutForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const name = document.getElementById('checkoutName').value.trim();
@@ -83,106 +87,107 @@ function initCheckoutPage() {
         const address = document.getElementById('checkoutAddress').value.trim();
         const city = document.getElementById('checkoutCity').value.trim();
         const postalCode = document.getElementById('checkoutPostalCode').value.trim();
-        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-        // Validation
         if (!name || !email || !phone || !address || !city || !postalCode) {
             showAlert('checkoutAlert', 'Please fill in all required shipping and contact details.', 'error');
             return;
         }
 
-        if (paymentMethod === 'card') {
-            const cardNum = document.getElementById('cardNumber').value.trim();
-            const cardExp = document.getElementById('cardExpiry').value.trim();
-            const cardCvv = document.getElementById('cardCvv').value.trim();
-
-            if (!cardNum || !cardExp || !cardCvv) {
-                showAlert('checkoutAlert', 'Please enter simulated card details.', 'error');
-                return;
-            }
+        const placeOrderBtn = document.getElementById('placeOrderBtn') || checkoutForm.querySelector('button[type="submit"]');
+        if (placeOrderBtn) {
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.textContent = 'Processing Cash on Delivery Order...';
         }
 
-        // Generate Order Record
-        const orderId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-        const orderDate = new Date().toISOString().substring(0, 10);
-
-        const newOrder = {
-            order_id: orderId,
-            user_id: user ? user.user_id : 'GUEST',
-            customer_name: name,
-            customer_email: email,
-            customer_phone: phone,
-            shipping_address: `${address}, ${city}, ${postalCode}`,
-            total_amount: finalTotal,
-            payment_method: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Simulated Card Payment',
-            order_status: 'Pending',
-            order_date: orderDate,
-            items: cart.map(item => ({
-                product_id: item.product_id,
-                product_name: item.product_name,
-                quantity: item.quantity,
-                price: item.price
-            }))
-        };
-
-        // Save order to history
-        const ordersHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS)) || [];
-        ordersHistory.unshift(newOrder);
-        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(ordersHistory));
-
-        // Deduct inventory stock in storage
-        const products = getProducts();
-        cart.forEach(cartItem => {
-            const prod = products.find(p => p.id === cartItem.product_id);
-            if (prod) prod.stock = Math.max(0, prod.stock - cartItem.quantity);
+        const res = await apiFetch('/checkout', 'POST', {
+            name,
+            phone,
+            address,
+            city,
+            postalCode,
+            paymentMethod: 'Cash on Delivery'
         });
-        saveProducts(products);
 
-        // Clear Cart
-        saveCart([]);
-
-        // Redirect to Order Confirmation page
-        window.location.href = `order-confirmation.html?id=${orderId}`;
+        if (res && res.success && res.order_id) {
+            updateHeaderCartCount();
+            window.location.href = `order-confirmation.html?id=${res.order_id}`;
+        } else {
+            if (placeOrderBtn) {
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.textContent = 'Place Order (Cash on Delivery)';
+            }
+            showAlert('checkoutAlert', res ? res.message : 'Checkout failed. Your cart was not changed.', 'error');
+        }
     });
 }
 
 /**
- * Handle Order Confirmation Page Receipt Rendering
+ * Handle Order Confirmation Page Receipt Rendering directly from Python & MySQL
  */
-function initOrderConfirmationPage() {
+async function initOrderConfirmationPage() {
     const confirmOrderId = document.getElementById('confirmOrderId');
-    if (!confirmOrderId) return;
+    if (!confirmOrderId) return; // Not on order-confirmation page
 
     const orderId = getUrlParam('id');
-    const ordersHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS)) || [];
-    const order = ordersHistory.find(o => o.order_id === orderId) || ordersHistory[0];
-
-    if (!order) {
-        alert('Order record not found.');
+    if (!orderId) {
         window.location.href = 'index.html';
         return;
     }
 
-    // Populate receipt details
-    confirmOrderId.textContent = `#${order.order_id}`;
-    document.getElementById('confirmOrderDate').textContent = order.order_date;
-    document.getElementById('confirmOrderStatus').textContent = order.order_status;
-    document.getElementById('confirmCustomerName').textContent = order.customer_name;
-    document.getElementById('confirmShippingAddress').textContent = order.shipping_address;
-    document.getElementById('confirmPaymentMethod').textContent = order.payment_method;
-    document.getElementById('confirmTotalAmount').textContent = formatCurrency(order.total_amount);
+    const res = await apiFetch(`/order?id=${orderId}`);
 
-    // Populate Receipt Table Items
+    if (!res || !res.success || !res.order) {
+        confirmOrderId.textContent = 'Not Found';
+        const orderContainer = document.querySelector('.confirmation-card') || document.querySelector('main');
+        if (orderContainer) {
+            orderContainer.innerHTML = `
+                <div class="empty-state" style="padding: 40px; text-align: center;">
+                    <h2>Order Not Found</h2>
+                    <p>${res ? res.message : 'Could not find the requested order record in the database.'}</p>
+                    <a href="orders.html" class="btn-primary" style="margin-top: 15px;">View My Orders</a>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    const order = res.order;
+
+    // Populate receipt header
+    confirmOrderId.textContent = `#ORD-${order.order_id}`;
+    
+    const dateEl = document.getElementById('confirmOrderDate');
+    const statusEl = document.getElementById('confirmOrderStatus');
+    const nameEl = document.getElementById('confirmCustomerName');
+    const addressEl = document.getElementById('confirmShippingAddress');
+    const paymentEl = document.getElementById('confirmPaymentMethod');
+    const totalEl = document.getElementById('confirmTotalAmount');
+
+    if (dateEl) dateEl.textContent = (order.order_date || '').substring(0, 19);
+    if (statusEl) {
+        statusEl.textContent = order.order_status;
+        statusEl.className = `badge-status status-${(order.order_status || 'pending').toLowerCase()}`;
+    }
+    if (nameEl) nameEl.textContent = order.customer_name || 'Customer';
+    if (addressEl) addressEl.textContent = order.shipping_address;
+    if (paymentEl) paymentEl.textContent = order.payment_method;
+    if (totalEl) totalEl.textContent = formatCurrency(order.total_amount);
+
+    // Populate Receipt Table Line Items
     const itemsListBody = document.getElementById('confirmItemsList');
-    if (itemsListBody) {
+    if (itemsListBody && order.items) {
         itemsListBody.innerHTML = '';
         order.items.forEach(item => {
             const tr = document.createElement('tr');
+            const itemPrice = parseFloat(item.price);
+            const itemQty = parseInt(item.quantity);
+            const lineSubtotal = itemPrice * itemQty;
+
             tr.innerHTML = `
-                <td>${item.product_name}</td>
-                <td>${item.quantity}</td>
-                <td>${formatCurrency(item.price)}</td>
-                <td>${formatCurrency(item.price * item.quantity)}</td>
+                <td><strong>${escapeHTML(item.product_name)}</strong></td>
+                <td>${itemQty}</td>
+                <td>${formatCurrency(itemPrice)}</td>
+                <td>${formatCurrency(lineSubtotal)}</td>
             `;
             itemsListBody.appendChild(tr);
         });

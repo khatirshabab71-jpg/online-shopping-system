@@ -1,236 +1,204 @@
 /**
  * ShopNow - Online Shopping System
  * Main Global Utility JavaScript (Pure Vanilla JS)
+ * Serves as the central API client, session manager, and global UI handler.
  */
 
-// Global Storage Keys
+// Storage Keys
 const STORAGE_KEYS = {
-    USER: 'shopnow_user_session',
-    ADMIN: 'shopnow_admin_session',
-    CART: 'shopnow_cart_items',
-    ORDERS: 'shopnow_orders_history',
-    PRODUCTS: 'shopnow_products_data'
+    USER_TOKEN: 'shopnow_token',
+    USER_PROFILE: 'shopnow_user',
+    ADMIN_TOKEN: 'shopnow_admin_token',
+    ADMIN_PROFILE: 'shopnow_admin'
 };
 
-// Backend API Base URL
-const API_BASE_URL = 'http://localhost:8000/api';
+// Relative API Base URL (served from the same Python server origin)
+const API_BASE_URL = '/api';
 
 /**
- * Universal Async API Fetch Helper for Python Backend Communication
+ * Universal Async API Fetch Helper for Python Backend Communication.
+ * Automatically attaches session authorization headers and handles error responses.
  */
-async function apiFetch(endpoint, method = 'GET', data = null) {
+async function apiFetch(endpoint, method = 'GET', data = null, isAdmin = false) {
     try {
-        const options = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const headers = {
+            'Content-Type': 'application/json'
         };
 
-        if (data && (method === 'POST' || method === 'PUT')) {
+        // Attach appropriate bearer token
+        const token = isAdmin ? getAdminToken() : (getAuthToken() || getAdminToken());
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['X-Session-Token'] = token;
+        }
+
+        const options = {
+            method: method,
+            headers: headers
+        };
+
+        if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
             options.body = JSON.stringify(data);
         }
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        if (!response.ok) return null;
-        return await response.json();
+        let result = null;
+
+        try {
+            result = await response.json();
+        } catch (e) {
+            result = null;
+        }
+
+        if (!response.ok) {
+            if (response.status === 401 && !window.location.pathname.includes('login.html')) {
+                // Session expired or revoked
+                if (isAdmin) {
+                    removeAdminSession();
+                } else {
+                    removeUserSession();
+                }
+            }
+            return result || { success: false, message: `Server error (${response.status})` };
+        }
+
+        return result || { success: true };
     } catch (err) {
-        // Graceful fallback to client-side storage when server is offline
+        console.error('API Fetch Network Error:', err);
+        return { 
+            success: false, 
+            message: 'Server is currently offline or unreachable. Please verify Python server is running.' 
+        };
+    }
+}
+
+// ----------------------------------------------------------------------
+// USER SESSION MANAGEMENT
+// ----------------------------------------------------------------------
+
+function getAuthToken() {
+    return localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
+}
+
+function setAuthToken(token) {
+    localStorage.setItem(STORAGE_KEYS.USER_TOKEN, token);
+}
+
+function getCurrentUser() {
+    const raw = localStorage.getItem(STORAGE_KEYS.USER_PROFILE);
+    try {
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
         return null;
     }
 }
 
-// Initial Sample Products Data (Used for Frontend Demo & Local Storage Fallback)
-const DEFAULT_PRODUCTS = [
-    {
-        id: 1,
-        name: 'Pro Wireless Smartphone 128GB',
-        category_id: 1,
-        category_name: 'Electronics',
-        price: 699.99,
-        discount: 15,
-        stock: 15,
-        rating: 4.5,
-        image: 'images/phone.jpg',
-        description: 'Experience cutting-edge smartphone technology with high-resolution camera system, long-lasting battery, and superfast processing power.'
-    },
-    {
-        id: 2,
-        name: 'UltraBook Slim 15 Pro Core i7',
-        category_id: 2,
-        category_name: 'Laptops',
-        price: 1199.00,
-        discount: 0,
-        stock: 8,
-        rating: 4.9,
-        image: 'images/laptop.jpg',
-        description: 'Lightweight ultra-performance laptop designed for software development, graphic creation, and multi-tasking productivity.'
-    },
-    {
-        id: 3,
-        name: 'Active Noise Cancelling Wireless Headphones',
-        category_id: 4,
-        category_name: 'Accessories',
-        price: 149.99,
-        discount: 20,
-        stock: 25,
-        rating: 4.2,
-        image: 'images/headphones.jpg',
-        description: 'Immersive sound quality with active noise cancellation, built-in HD microphone, and 30-hour playback battery life.'
-    },
-    {
-        id: 4,
-        name: 'Smart Fitness Watch Series 5',
-        category_id: 4,
-        category_name: 'Accessories',
-        price: 89.99,
-        discount: 0,
-        stock: 18,
-        rating: 4.6,
-        image: 'images/watch.jpg',
-        description: 'Track heart rate, daily steps, sleep patterns, and sports activities with water-resistant sleek OLED touchscreen.'
-    },
-    {
-        id: 5,
-        name: 'Men Classic Slim Fit Denim Jacket',
-        category_id: 3,
-        category_name: 'Fashion',
-        price: 59.99,
-        discount: 10,
-        stock: 30,
-        rating: 4.4,
-        image: 'images/jacket.jpg',
-        description: 'Stylish premium denim jacket crafted from comfortable breathable cotton blend. Suitable for all casual occasions.'
-    },
-    {
-        id: 6,
-        name: 'Automatic Stainless Steel Coffee Maker',
-        category_id: 5,
-        category_name: 'Home & Kitchen',
-        price: 129.50,
-        discount: 5,
-        stock: 12,
-        rating: 4.7,
-        image: 'images/coffeemaker.jpg',
-        description: 'Programmable drip coffee machine with thermal stainless steel carafe, automatic shut-off, and built-in bean grinder.'
-    }
-];
-
-// Document Ready Initialization
-document.addEventListener('DOMContentLoaded', () => {
-    initLocalProductsStore();
-    updateHeaderCartCount();
-    setupHeaderUserUI();
-});
-
-/**
- * Initialize Products in Local Storage if not present
- */
-function initLocalProductsStore() {
-    if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
-    }
-}
-
-/**
- * Get Products List from Storage
- */
-function getProducts() {
-    initLocalProductsStore();
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || DEFAULT_PRODUCTS;
-}
-
-/**
- * Save Products List to Storage
- */
-function saveProducts(products) {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-}
-
-/**
- * Get Current Logged-in Customer Session
- */
-function getCurrentUser() {
-    const userJson = localStorage.getItem(STORAGE_KEYS.USER);
-    return userJson ? JSON.parse(userJson) : null;
-}
-
-/**
- * Set Customer Session
- */
 function setCurrentUser(user) {
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(user));
 }
 
-/**
- * Logout Customer
- */
-function logoutUser() {
-    localStorage.removeItem(STORAGE_KEYS.USER);
+function removeUserSession() {
+    localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_PROFILE);
+}
+
+async function logoutUser() {
+    try {
+        await apiFetch('/logout', 'POST');
+    } catch (e) {}
+    removeUserSession();
     window.location.href = 'login.html';
 }
 
-/**
- * Get Current Admin Session
- */
+// ----------------------------------------------------------------------
+// ADMIN SESSION MANAGEMENT
+// ----------------------------------------------------------------------
+
+function getAdminToken() {
+    return localStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN);
+}
+
+function setAdminToken(token) {
+    localStorage.setItem(STORAGE_KEYS.ADMIN_TOKEN, token);
+}
+
 function getAdminSession() {
-    const adminJson = localStorage.getItem(STORAGE_KEYS.ADMIN);
-    return adminJson ? JSON.parse(adminJson) : null;
-}
-
-/**
- * Set Admin Session
- */
-function setAdminSession(adminData) {
-    localStorage.setItem(STORAGE_KEYS.ADMIN, JSON.stringify(adminData));
-}
-
-/**
- * Logout Admin
- */
-function logoutAdmin() {
-    localStorage.removeItem(STORAGE_KEYS.ADMIN);
-    window.location.href = 'login.html';
-}
-
-/**
- * Cart Storage Operations
- */
-function getCart() {
-    const cartJson = localStorage.getItem(STORAGE_KEYS.CART);
-    return cartJson ? JSON.parse(cartJson) : [];
-}
-
-function saveCart(cartItems) {
-    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cartItems));
-    updateHeaderCartCount();
-}
-
-/**
- * Update Header Cart Count Badge
- */
-function updateHeaderCartCount() {
-    const cartCountBadge = document.getElementById('cartCount');
-    if (cartCountBadge) {
-        const cart = getCart();
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCountBadge.textContent = totalItems;
+    const raw = localStorage.getItem(STORAGE_KEYS.ADMIN_PROFILE);
+    try {
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
     }
 }
 
-/**
- * Dynamically Adjust Header User Navigation based on login state
- */
+function setAdminSession(adminData) {
+    localStorage.setItem(STORAGE_KEYS.ADMIN_PROFILE, JSON.stringify(adminData));
+}
+
+function removeAdminSession() {
+    localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.ADMIN_PROFILE);
+}
+
+async function logoutAdmin() {
+    try {
+        await apiFetch('/logout', 'POST', null, true);
+    } catch (e) {}
+    removeAdminSession();
+    window.location.href = 'login.html';
+}
+
+// ----------------------------------------------------------------------
+// UI HELPERS, CART & WISHLIST BADGES
+// ----------------------------------------------------------------------
+
+async function updateHeaderCartCount() {
+    const cartCountBadge = document.getElementById('cartCount');
+    if (!cartCountBadge) return;
+
+    const token = getAuthToken();
+    if (!token) {
+        cartCountBadge.textContent = '0';
+        return;
+    }
+
+    const res = await apiFetch('/cart');
+    if (res && res.success && res.cart) {
+        cartCountBadge.textContent = res.cart.item_count || 0;
+    } else {
+        cartCountBadge.textContent = '0';
+    }
+}
+
+async function updateHeaderWishlistCount() {
+    const badge = document.getElementById('wishlistCount');
+    const menuBadge = document.getElementById('menuWishlistCount');
+    const token = getAuthToken();
+    if (!token) {
+        if (badge) badge.textContent = '0';
+        if (menuBadge) menuBadge.textContent = '0';
+        return;
+    }
+
+    const res = await apiFetch('/wishlist');
+    const count = (res && res.success && res.wishlist) ? (res.wishlist.total_count || 0) : 0;
+    if (badge) badge.textContent = count;
+    if (menuBadge) menuBadge.textContent = count;
+}
+
 function setupHeaderUserUI() {
     const userMenuSection = document.getElementById('userMenuSection');
     if (!userMenuSection) return;
 
     const user = getCurrentUser();
-    if (user) {
+    if (user && getAuthToken()) {
+        const firstName = user.name ? user.name.split(' ')[0] : 'Customer';
         userMenuSection.innerHTML = `
-            <span style="font-weight:600; font-size:0.9rem; color:var(--text-main);">Hi, ${user.name.split(' ')[0]}</span>
+            <span style="font-weight:600; font-size:0.9rem; color:var(--text-main);">Hi, ${escapeHTML(firstName)}</span>
+            <a href="wishlist.html" class="btn-link" title="Saved Items">Wishlist (<span id="menuWishlistCount">0</span>)</a>
+            <a href="orders.html" class="btn-link">My Orders</a>
             <a href="profile.html" class="btn-link">Profile</a>
-            <button id="headerLogoutBtn" class="btn-danger-outline" style="padding:4px 10px; font-size:0.8rem;">Logout</button>
+            <button id="headerLogoutBtn" class="btn-danger-outline" style="padding:4px 10px; font-size:0.8rem; cursor:pointer;">Logout</button>
         `;
 
         const headerLogoutBtn = document.getElementById('headerLogoutBtn');
@@ -240,32 +208,20 @@ function setupHeaderUserUI() {
     }
 }
 
-/**
- * Format Price to USD Currency String
- */
 function formatCurrency(amount) {
-    return '$' + parseFloat(amount).toFixed(2);
+    return '$' + parseFloat(amount || 0).toFixed(2);
 }
 
-/**
- * Calculate Discounted Price
- */
 function getDiscountedPrice(price, discountPercent) {
-    if (!discountPercent || discountPercent <= 0) return price;
-    return price - (price * (discountPercent / 100));
+    if (!discountPercent || discountPercent <= 0) return parseFloat(price);
+    return parseFloat(price) * (1 - (discountPercent / 100));
 }
 
-/**
- * Get URL Query Parameter Value
- */
 function getUrlParam(paramName) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(paramName);
 }
 
-/**
- * Display User Alert Messages
- */
 function showAlert(containerId, message, type = 'error') {
     const alertBox = document.getElementById(containerId);
     if (!alertBox) return;
@@ -273,7 +229,38 @@ function showAlert(containerId, message, type = 'error') {
     alertBox.className = `alert-message ${type}`;
     alertBox.textContent = message;
     alertBox.classList.remove('hidden');
-
-    // Auto scroll to alert
     alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+
+function showToast(message, type = 'info') {
+    let toast = document.getElementById('globalToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'globalToast';
+        toast.className = 'cart-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.className = `cart-toast show toast-${type}`;
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2800);
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    }[tag] || tag));
+}
+
+// Document Ready Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    updateHeaderCartCount();
+    updateHeaderWishlistCount();
+    setupHeaderUserUI();
+});

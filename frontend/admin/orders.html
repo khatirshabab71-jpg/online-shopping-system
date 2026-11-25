@@ -31,6 +31,7 @@
                     <li><a href="products.html">📦 Product Management</a></li>
                     <li><a href="users.html">👥 User Management</a></li>
                     <li><a href="orders.html" class="active">🛒 Order Management</a></li>
+                    <li><a href="reviews.html">⭐ Review Moderation</a></li>
                 </ul>
             </nav>
         </aside>
@@ -169,6 +170,21 @@
                             <td>$699.99</td>
                             <td>$699.99</td>
                         </tr>
+                    </tbody>
+                </table>
+
+                <h4 style="margin-top:20px;">Status Change & Audit History</h4>
+                <table class="receipt-table" id="modalOrderHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Changed By</th>
+                            <th>Notes</th>
+                            <th>Date / Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalOrderHistoryBody">
+                        <tr><td colspan="4" style="text-align:center;">No history records yet.</td></tr>
                     </tbody>
                 </table>
             </div>

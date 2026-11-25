@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="auth-body">
+    <div class="auth-wrapper">
+        <div class="auth-card" style="text-align: center;">
+            <div class="auth-brand">
+                <span class="logo-icon">✉️</span>
+                <h2>Verifying Your Email</h2>
+                <p>Confirming your ShopNow customer account</p>
+            </div>
+
+            <div id="verifyStatusBox" style="padding: 20px 0;">
+                <div class="loading-spinner">Validating single-use token with Python server...</div>
+            </div>
+
+            <div id="verifyActionBox" class="hidden" style="margin-top: 20px;">
+                <a href="login.html" class="btn-primary btn-full">Sign In to Your Account</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = getUrlParam('token');
+            const statusBox = document.getElementById('verifyStatusBox');
+            const actionBox = document.getElementById('verifyActionBox');
+
+            if (!token) {
+                statusBox.innerHTML = `
+                    <div class="alert-message error">
+                        <strong>Missing Token:</strong> No verification token was provided in the URL link.
+                    </div>
+                `;
+                return;
+            }
+
+            const res = await apiFetch('/auth/verify-email', 'POST', { token });
+
+            if (res && res.success) {
+                statusBox.innerHTML = `
+                    <div class="alert-message success">
+                        <h3>✓ Email Verified!</h3>
+                        <p>${escapeHTML(res.message)}</p>
+                    </div>
+                `;
+                if (actionBox) actionBox.classList.remove('hidden');
+            } else {
+                statusBox.innerHTML = `
+                    <div class="alert-message error">
+                        <h3>✕ Verification Failed</h3>
+                        <p>${escapeHTML(res ? res.message : 'Invalid or expired verification token.')}</p>
+                    </div>
+                `;
+                if (actionBox) {
+                    actionBox.classList.remove('hidden');
+                    actionBox.innerHTML = `<a href="login.html" class="btn-secondary btn-full">Return to Login</a>`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

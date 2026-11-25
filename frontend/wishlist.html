@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist - ShopNow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="container top-bar-content">
+                <p>Welcome to ShopNow | University Software Engineering Project</p>
+                <div class="top-bar-links">
+                    <a href="admin/login.html">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛍️</span> Shop<span class="logo-accent">Now</span>
+                </a>
+                <div class="search-box">
+                    <form action="products.html" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products...">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="user-menu" id="userMenuSection">
+                        <a href="login.html" class="btn-link">Login</a>
+                        <a href="register.html" class="btn-primary">Register</a>
+                    </div>
+                    <a href="wishlist.html" class="cart-badge-link active" title="Saved Items" style="margin-right: 12px;">
+                        <span class="cart-icon">❤️</span>
+                        <span class="cart-text">Wishlist</span>
+                        <span class="badge" id="wishlistCount">0</span>
+                    </a>
+                    <a href="cart.html" class="cart-badge-link">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Cart</span>
+                        <span class="badge" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">All Products</a></li>
+                    <li><a href="wishlist.html" class="active">Wishlist</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="profile.html">My Profile</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        <div class="page-header">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> &gt; <span>My Wishlist</span>
+            </div>
+            <h1>Saved Products & Wishlist</h1>
+            <p>Keep track of products you love and move them to your cart when ready to buy.</p>
+        </div>
+
+        <div id="wishlistAlert" class="alert-message hidden"></div>
+
+        <div id="wishlistContainer" class="wishlist-wrapper">
+            <div class="loading-spinner">Loading your saved products...</div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyWishlistView" class="empty-state hidden">
+            <div class="empty-icon">❤️</div>
+            <h2>Your Wishlist is Empty</h2>
+            <p>Save products as you shop and they will appear here across all your devices.</p>
+            <a href="products.html" class="btn-primary" style="margin-top: 15px;">Discover Products</a>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 ShopNow Online Shopping System. Built for Educational & Production MVP Purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/wishlist.js"></script>
+</body>
+</html>

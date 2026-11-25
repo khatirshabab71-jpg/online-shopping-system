@@ -34,6 +34,11 @@
                         <a href="login.html" class="btn-link">Login</a>
                         <a href="register.html" class="btn-primary">Register</a>
                     </div>
+                    <a href="wishlist.html" class="cart-badge-link" id="wishlistHeaderBadge" title="Saved Items" style="margin-right: 12px;">
+                        <span class="cart-icon">❤️</span>
+                        <span class="cart-text">Wishlist</span>
+                        <span class="badge" id="wishlistCount">0</span>
+                    </a>
                     <a href="cart.html" class="cart-badge-link">
                         <span class="cart-icon">🛒</span>
                         <span class="cart-text">Cart</span>
@@ -48,6 +53,7 @@
                 <ul class="nav-links">
                     <li><a href="index.html">Home</a></li>
                     <li><a href="products.html">All Products</a></li>
+                    <li><a href="wishlist.html">Wishlist</a></li>
                     <li><a href="orders.html">My Orders</a></li>
                     <li><a href="profile.html">My Profile</a></li>
                 </ul>
@@ -111,43 +117,14 @@
                 <!-- Payment Method Section -->
                 <div class="checkout-section-card">
                     <h2>3. Payment Method</h2>
-                    <p class="section-notice">⚠️ <strong>University Project Notice:</strong> This website uses simulated payment processing. Never enter real financial or bank card data.</p>
-                    
                     <div class="payment-options">
                         <label class="payment-option">
                             <input type="radio" name="paymentMethod" value="cod" checked id="payCOD">
                             <div class="option-details">
                                 <strong>Cash on Delivery (COD)</strong>
-                                <span>Pay with cash when your package arrives at your doorstep.</span>
+                                <span>Pay in cash when your order is delivered to your address.</span>
                             </div>
                         </label>
-
-                        <label class="payment-option">
-                            <input type="radio" name="paymentMethod" value="card" id="payCard">
-                            <div class="option-details">
-                                <strong>Simulated Credit / Debit Card</strong>
-                                <span>Simulate card payment (No real money processed).</span>
-                            </div>
-                        </label>
-                    </div>
-
-                    <!-- Simulated Card Fields (toggled via JS) -->
-                    <div id="simulatedCardDetails" class="card-details-box hidden">
-                        <h4>Simulated Card Information</h4>
-                        <div class="form-group">
-                            <label for="cardNumber">Card Number (Simulated)</label>
-                            <input type="text" id="cardNumber" placeholder="4000 0000 0000 0000" maxlength="19">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cardExpiry">Expiration (MM/YY)</label>
-                                <input type="text" id="cardExpiry" placeholder="12/28" maxlength="5">
-                            </div>
-                            <div class="form-group">
-                                <label for="cardCvv">CVV Code</label>
-                                <input type="password" id="cardCvv" placeholder="123" maxlength="4">
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

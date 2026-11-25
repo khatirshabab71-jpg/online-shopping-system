@@ -1,140 +1,144 @@
 """
 ShopNow - Online Shopping System
-Products Management Module (Pure Python)
+Products Management Module (Pure Python + MySQL)
+Supports Search, Multi-Facet Filters, Sorting & Pagination
 """
 
+import math
 from database import execute_query
 
-# Sample Fallback Products Data
-FALLBACK_PRODUCTS = [
-    {
-        'id': 1,
-        'product_id': 1,
-        'name': 'Pro Wireless Smartphone 128GB',
-        'category_id': 1,
-        'category_name': 'Electronics',
-        'price': 699.99,
-        'discount': 15,
-        'stock': 15,
-        'rating': 4.5,
-        'image': 'images/phone.jpg',
-        'description': 'Experience cutting-edge smartphone technology with high-resolution camera system, long-lasting battery, and superfast processing power.'
-    },
-    {
-        'id': 2,
-        'product_id': 2,
-        'name': 'UltraBook Slim 15 Pro Core i7',
-        'category_id': 2,
-        'category_name': 'Laptops',
-        'price': 1199.00,
-        'discount': 0,
-        'stock': 8,
-        'rating': 4.9,
-        'image': 'images/laptop.jpg',
-        'description': 'Lightweight ultra-performance laptop designed for software development, graphic creation, and multi-tasking productivity.'
-    },
-    {
-        'id': 3,
-        'product_id': 3,
-        'name': 'Active Noise Cancelling Wireless Headphones',
-        'category_id': 4,
-        'category_name': 'Accessories',
-        'price': 149.99,
-        'discount': 20,
-        'stock': 25,
-        'rating': 4.2,
-        'image': 'images/headphones.jpg',
-        'description': 'Immersive sound quality with active noise cancellation, built-in HD microphone, and 30-hour playback battery life.'
-    },
-    {
-        'id': 4,
-        'product_id': 4,
-        'name': 'Smart Fitness Watch Series 5',
-        'category_id': 4,
-        'category_name': 'Accessories',
-        'price': 89.99,
-        'discount': 0,
-        'stock': 18,
-        'rating': 4.6,
-        'image': 'images/watch.jpg',
-        'description': 'Track heart rate, daily steps, sleep patterns, and sports activities with water-resistant sleek OLED touchscreen.'
-    },
-    {
-        'id': 5,
-        'product_id': 5,
-        'name': 'Men Classic Slim Fit Denim Jacket',
-        'category_id': 3,
-        'category_name': 'Fashion',
-        'price': 59.99,
-        'discount': 10,
-        'stock': 30,
-        'rating': 4.4,
-        'image': 'images/jacket.jpg',
-        'description': 'Stylish premium denim jacket crafted from comfortable breathable cotton blend. Suitable for all casual occasions.'
-    },
-    {
-        'id': 6,
-        'product_id': 6,
-        'name': 'Automatic Stainless Steel Coffee Maker',
-        'category_id': 5,
-        'category_name': 'Home & Kitchen',
-        'price': 129.50,
-        'discount': 5,
-        'stock': 12,
-        'rating': 4.7,
-        'image': 'images/coffeemaker.jpg',
-        'description': 'Programmable drip coffee machine with thermal stainless steel carafe, automatic shut-off, and built-in bean grinder.'
-    }
-]
-
-def get_all_products(category_id=None, search_query=None, sort_by=None, in_stock=False):
+def get_all_products(category_id=None, search_query=None, sort_by=None, in_stock=False, 
+                     min_price=None, max_price=None, min_rating=None, 
+                     page=1, limit=12, include_inactive=False):
     """
-    Retrieves product list with search keyword, category filter, and sorting.
+    Retrieves filtered and paginated product list from MySQL.
     """
-    # 1. Try MySQL Database
-    db_products = execute_query(
-        """SELECT p.*, c.category_name 
-           FROM products p 
-           LEFT JOIN categories c ON p.category_id = c.category_id""",
-        fetchall=True
-    )
+    where_clauses = []
+    params = []
 
-    products = db_products if db_products else FALLBACK_PRODUCTS
+    if not include_inactive:
+        where_clauses.append("p.is_active = 1")
 
-    # Filter by Category
+    # Category Filter
     if category_id and str(category_id) != 'all':
-        products = [p for p in products if str(p.get('category_id')) == str(category_id) or str(p.get('category_name')).lower() == str(category_id).lower()]
+        if str(category_id).isdigit():
+            where_clauses.append("p.category_id = %s")
+            params.append(int(category_id))
+        else:
+            where_clauses.append("LOWER(c.category_name) = LOWER(%s)")
+            params.append(str(category_id))
 
-    # Filter by Search Query
-    if search_query:
-        q = search_query.strip().lower()
-        products = [p for p in products if q in p['name'].lower() or q in p['description'].lower() or q in p.get('category_name', '').lower()]
+    # Search Query
+    if search_query and search_query.strip():
+        q = f"%{search_query.strip()}%"
+        where_clauses.append("(p.product_name LIKE %s OR p.description LIKE %s OR c.category_name LIKE %s)")
+        params.extend([q, q, q])
 
-    # Filter by Stock Status
+    # Stock Filter
     if in_stock:
-        products = [p for p in products if p['stock'] > 0]
+        where_clauses.append("p.stock > 0")
+
+    # Price Range Filters
+    if min_price is not None:
+        try:
+            min_p = float(min_price)
+            where_clauses.append("(p.price * (1 - p.discount/100.0)) >= %s")
+            params.append(min_p)
+        except (ValueError, TypeError):
+            pass
+
+    if max_price is not None:
+        try:
+            max_p = float(max_price)
+            where_clauses.append("(p.price * (1 - p.discount/100.0)) <= %s")
+            params.append(max_p)
+        except (ValueError, TypeError):
+            pass
+
+    # Rating Filter
+    if min_rating is not None:
+        try:
+            min_r = float(min_rating)
+            where_clauses.append("p.rating >= %s")
+            params.append(min_r)
+        except (ValueError, TypeError):
+            pass
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+
+    # 1. Total Count Query for Pagination
+    count_query = f"""
+        SELECT COUNT(*) as total
+        FROM products p 
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        {where_sql}
+    """
+    count_res = execute_query(count_query, tuple(params), fetchone=True)
+    total_records = count_res['total'] if count_res else 0
 
     # Sorting
+    order_sql = "ORDER BY p.product_id ASC"
     if sort_by == 'price-low':
-        products.sort(key=lambda p: float(p['price']) * (1 - float(p.get('discount', 0))/100))
+        order_sql = "ORDER BY (p.price * (1 - p.discount/100.0)) ASC"
     elif sort_by == 'price-high':
-        products.sort(key=lambda p: float(p['price']) * (1 - float(p.get('discount', 0))/100), reverse=True)
+        order_sql = "ORDER BY (p.price * (1 - p.discount/100.0)) DESC"
     elif sort_by == 'rating':
-        products.sort(key=lambda p: float(p.get('rating', 0)), reverse=True)
+        order_sql = "ORDER BY p.rating DESC"
+    elif sort_by == 'newest':
+        order_sql = "ORDER BY p.product_id DESC"
 
-    # Standardize keys
-    for p in products:
-        if 'product_id' in p and 'id' not in p:
-            p['id'] = p['product_id']
+    # Pagination bounds
+    try:
+        p_num = max(1, int(page))
+        l_num = max(1, min(100, int(limit)))
+    except (ValueError, TypeError):
+        p_num = 1
+        l_num = 12
 
-    return products
+    offset = (p_num - 1) * l_num
+    total_pages = max(1, math.ceil(total_records / l_num)) if total_records > 0 else 1
 
-def get_product_by_id(product_id):
+    # 2. Main Data Query with LIMIT and OFFSET
+    data_query = f"""
+        SELECT p.product_id, p.category_id, p.product_name, p.description, 
+               p.price, p.discount, p.stock, p.rating, p.image, p.is_active, p.created_at,
+               c.category_name 
+        FROM products p 
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        {where_sql}
+        {order_sql}
+        LIMIT %s OFFSET %s
     """
-    Fetches details for a single product by ID.
+    data_params = list(params) + [l_num, offset]
+
+    db_products = execute_query(data_query, tuple(data_params), fetchall=True)
+    if db_products is None:
+        return None
+
+    # Harmonize keys for frontend compatibility
+    for p in db_products:
+        p['id'] = p['product_id']
+        p['name'] = p['product_name']
+
+    return {
+        'products': db_products,
+        'total': total_records,
+        'page': p_num,
+        'limit': l_num,
+        'total_pages': total_pages
+    }
+
+def get_product_by_id(product_id: int):
     """
+    Fetches details for a single product by ID from MySQL.
+    """
+    if not product_id:
+        return None
+
     db_product = execute_query(
-        """SELECT p.*, c.category_name 
+        """SELECT p.product_id, p.category_id, p.product_name, p.description, 
+                  p.price, p.discount, p.stock, p.rating, p.image, p.is_active, p.created_at,
+                  c.category_name 
            FROM products p 
            LEFT JOIN categories c ON p.category_id = c.category_id
            WHERE p.product_id = %s""",
@@ -144,11 +148,12 @@ def get_product_by_id(product_id):
 
     if db_product:
         db_product['id'] = db_product['product_id']
-        return db_product
+        db_product['name'] = db_product['product_name']
 
-    # Fallback lookup
-    for p in FALLBACK_PRODUCTS:
-        if str(p['id']) == str(product_id):
-            return p
+    return db_product
 
-    return None
+def get_all_categories():
+    """
+    Fetches all product categories from MySQL.
+    """
+    return execute_query("SELECT category_id, category_name FROM categories ORDER BY category_id ASC", fetchall=True)

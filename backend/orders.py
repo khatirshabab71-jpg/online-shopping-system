@@ -1,154 +1,228 @@
 """
 ShopNow - Online Shopping System
-Order Placement & Fulfillment Module (Pure Python)
+Order Placement & Fulfillment Module (Pure Python + MySQL Atomic Transactions)
+Includes status history audit logging and asynchronous email notifications.
 """
 
 from datetime import datetime
-from database import execute_query
-from products import get_product_by_id
+from database import get_db_connection, execute_query
+from config import FIXED_SHIPPING_FEE
+import email_service
 
-# Fallback Orders Memory
-MOCK_ORDERS = [
-    {
-        'order_id': 10024,
-        'user_id': 101,
-        'customer_name': 'John Doe',
-        'total_amount': 714.99,
-        'payment_method': 'Cash on Delivery',
-        'shipping_address': '123 University Campus St, Apt 4B, NY',
-        'order_status': 'Pending',
-        'order_date': '2026-09-13',
-        'items': [
-            {'product_id': 1, 'product_name': 'Pro Wireless Smartphone 128GB', 'quantity': 1, 'price': 699.99}
-        ]
-    }
-]
-
-def create_order(data):
+def create_order(user_id: int, data: dict):
     """
-    Validates cart items & stock, creates order record and line items.
+    Places an order in a single atomic MySQL transaction.
+    - Re-checks stock and locks products (FOR UPDATE)
+    - Computes totals strictly from database prices
+    - Inserts order header and order_items
+    - Reduces product stock
+    - Clears user's cart
+    - Logs status change into order_status_history
+    - Commits transaction; on any error rolls back completely
+    - Fires order confirmation email in background thread without delaying HTTP response.
     """
-    user_id = data.get('user_id', 101)
-    customer_name = data.get('fullName', 'Customer').strip()
-    shipping_address = data.get('address', '').strip()
-    payment_method = data.get('paymentMethod', 'Cash on Delivery')
-    items = data.get('items', [])
+    address = data.get('address', '').strip()
+    city = data.get('city', '').strip()
+    postal_code = data.get('postalCode', '').strip()
 
-    if not shipping_address or not items:
-        return {'success': False, 'message': 'Shipping address and items required.'}
+    full_address_parts = [p for p in [address, city, postal_code] if p]
+    full_address = ', '.join(full_address_parts) if full_address_parts else address
 
-    total_amount = 0.0
-    order_items_to_save = []
+    if not full_address or len(full_address) < 5:
+        return {'success': False, 'message': 'Complete delivery address is required.'}
 
-    # 1. Validate Stock & Calculate Total Amount
-    for item in items:
-        prod_id = item.get('product_id')
-        qty = item.get('quantity', 1)
+    conn = get_db_connection()
+    if not conn:
+        return {'success': False, 'message': 'Database connection error. Could not place order.'}
 
-        product = get_product_by_id(prod_id)
-        if not product:
-            return {'success': False, 'message': f'Product ID {prod_id} not found.'}
+    cursor = None
+    try:
+        conn.autocommit = False
+        cursor = conn.cursor(dictionary=True)
 
-        if product['stock'] < qty:
-            return {'success': False, 'message': f'Product "{product["name"]}" has insufficient stock.'}
+        # 1. Fetch user's cart with row locking (FOR UPDATE)
+        cursor.execute("""
+            SELECT c.cart_id, c.quantity, p.product_id, p.product_name, 
+                   p.price, p.discount, p.stock, p.is_active
+            FROM cart c
+            JOIN products p ON c.product_id = p.product_id
+            WHERE c.user_id = %s
+            FOR UPDATE
+        """, (user_id,))
+        cart_items = cursor.fetchall()
 
-        unit_price = float(product['price']) * (1 - float(product.get('discount', 0))/100)
-        item_subtotal = unit_price * qty
-        total_amount += item_subtotal
+        if not cart_items:
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            return {'success': False, 'message': 'Your shopping cart is empty.'}
 
-        order_items_to_save.append({
-            'product_id': prod_id,
-            'product_name': product['name'],
-            'quantity': qty,
-            'price': unit_price
-        })
+        # 2. Validate stock & calculate server-side totals
+        order_items_to_save = []
+        subtotal = 0.0
 
-    shipping_fee = 15.00
-    final_total = round(total_amount + shipping_fee, 2)
-    order_date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        for item in cart_items:
+            if item.get('is_active') == 0:
+                conn.rollback()
+                cursor.close()
+                conn.close()
+                return {'success': False, 'message': f"Product '{item['product_name']}' is no longer active."}
 
-    # 2. Try DB Insertion
-    order_id = execute_query(
-        """INSERT INTO orders (user_id, total_amount, payment_method, shipping_address, order_status, order_date) 
-           VALUES (%s, %s, %s, %s, %s, %s)""",
-        (user_id, final_total, payment_method, shipping_address, 'Pending', order_date_str),
-        commit=True
-    )
+            qty = item['quantity']
+            if qty <= 0:
+                conn.rollback()
+                cursor.close()
+                conn.close()
+                return {'success': False, 'message': f"Invalid quantity for '{item['product_name']}'."}
 
-    if order_id:
+            if item['stock'] < qty:
+                conn.rollback()
+                cursor.close()
+                conn.close()
+                return {
+                    'success': False, 
+                    'message': f"Insufficient stock for '{item['product_name']}'. Only {item['stock']} available."
+                }
+
+            price = float(item['price'])
+            discount = float(item.get('discount', 0))
+            unit_price = round(price * (1.0 - discount / 100.0), 2)
+            line_total = round(unit_price * qty, 2)
+            subtotal += line_total
+
+            order_items_to_save.append({
+                'product_id': item['product_id'],
+                'product_name': item['product_name'],
+                'quantity': qty,
+                'price': unit_price
+            })
+
+        final_total = round(subtotal + FIXED_SHIPPING_FEE, 2)
+        order_date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # 3. Insert into orders table (Cash on Delivery)
+        cursor.execute("""
+            INSERT INTO orders (user_id, total_amount, payment_method, shipping_address, order_status, order_date)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (user_id, final_total, 'Cash on Delivery', full_address, 'Pending', order_date_str))
+        
+        order_id = cursor.lastrowid
+        if not order_id:
+            raise Exception("Failed to insert order record.")
+
+        # 4. Insert each order item and decrement product stock
         for oi in order_items_to_save:
-            execute_query(
-                "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (%s, %s, %s, %s)",
-                (order_id, oi['product_id'], oi['quantity'], oi['price']),
-                commit=True
+            cursor.execute("""
+                INSERT INTO order_items (order_id, product_id, quantity, price)
+                VALUES (%s, %s, %s, %s)
+            """, (order_id, oi['product_id'], oi['quantity'], oi['price']))
+
+            cursor.execute("""
+                UPDATE products SET stock = stock - %s WHERE product_id = %s
+            """, (oi['quantity'], oi['product_id']))
+
+        # 5. Clear cart for user
+        cursor.execute("DELETE FROM cart WHERE user_id = %s", (user_id,))
+
+        # 6. Insert initial status history record
+        cursor.execute("""
+            INSERT INTO order_status_history (order_id, status, changed_by, notes, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (order_id, 'Pending', 'customer', 'Cash on Delivery order placed', order_date_str))
+
+        # 7. Commit atomic transaction
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # 8. Asynchronously send email notification (non-blocking)
+        user_info = execute_query("SELECT name, email FROM users WHERE user_id = %s", (user_id,), fetchone=True)
+        if user_info:
+            email_service.send_order_placed_email(
+                user_info['email'],
+                user_info['name'],
+                order_id,
+                final_total,
+                full_address,
+                order_items_to_save
             )
-            # Deduct stock
-            execute_query(
-                "UPDATE products SET stock = stock - %s WHERE product_id = %s",
-                (oi['quantity'], oi['product_id']),
-                commit=True
-            )
-        # Clear cart
-        execute_query("DELETE FROM cart WHERE user_id = %s", (user_id,), commit=True)
-        return {'success': True, 'message': 'Order placed successfully!', 'order_id': order_id}
 
-    # 3. Fallback Memory Save
-    new_order_id = 10000 + len(MOCK_ORDERS) + 1
-    new_order = {
-        'order_id': new_order_id,
-        'user_id': user_id,
-        'customer_name': customer_name,
-        'total_amount': final_total,
-        'payment_method': payment_method,
-        'shipping_address': shipping_address,
-        'order_status': 'Pending',
-        'order_date': order_date_str[:10],
-        'items': order_items_to_save
-    }
-    MOCK_ORDERS.insert(0, new_order)
+        return {
+            'success': True,
+            'message': 'Order placed successfully!',
+            'order_id': order_id,
+            'total_amount': final_total
+        }
 
-    return {'success': True, 'message': 'Order placed successfully!', 'order_id': new_order_id}
+    except Exception as err:
+        if conn:
+            try:
+                conn.rollback()
+                if cursor:
+                    cursor.close()
+                conn.close()
+            except Exception:
+                pass
+        print(f"Transaction Rollback Error: {err}")
+        return {'success': False, 'message': f'Order could not be saved: {str(err)}'}
 
-def get_user_orders(user_id):
+def get_user_orders(user_id: int):
     """
-    Retrieves previous orders for a customer.
+    Retrieves previous orders placed by the authenticated customer only.
     """
     db_orders = execute_query(
-        "SELECT * FROM orders WHERE user_id = %s ORDER BY order_date DESC",
+        """SELECT order_id, user_id, total_amount, payment_method, 
+                  shipping_address, order_status, order_date 
+           FROM orders 
+           WHERE user_id = %s 
+           ORDER BY order_date DESC""",
         (user_id,),
         fetchall=True
     )
+    return db_orders if db_orders is not None else []
 
-    if db_orders:
-        return db_orders
-
-    return MOCK_ORDERS
-
-def get_order_by_id(order_id):
+def get_order_by_id(order_id: int, user_id: int = None, is_admin: bool = False):
     """
-    Fetches single order details and item breakdown.
+    Fetches full order details including line items and status history.
+    Enforces ownership: non-admin users can only view their own orders.
     """
     db_order = execute_query(
-        "SELECT * FROM orders WHERE order_id = %s",
+        """SELECT o.order_id, o.user_id, o.total_amount, o.payment_method, 
+                  o.shipping_address, o.order_status, o.order_date,
+                  u.name AS customer_name, u.email AS customer_email, u.phone AS customer_phone
+           FROM orders o
+           JOIN users u ON o.user_id = u.user_id
+           WHERE o.order_id = %s""",
         (order_id,),
         fetchone=True
     )
 
-    if db_order:
-        items = execute_query(
-            """SELECT oi.*, p.product_name 
-               FROM order_items oi 
-               JOIN products p ON oi.product_id = p.product_id 
-               WHERE oi.order_id = %s""",
-            (order_id,),
-            fetchall=True
-        )
-        db_order['items'] = items if items else []
-        return db_order
+    if not db_order:
+        return None
 
-    # Fallback search
-    for o in MOCK_ORDERS:
-        if str(o['order_id']) == str(order_id):
-            return o
+    # Check permission
+    if not is_admin and user_id is not None and db_order['user_id'] != user_id:
+        return None
 
-    return None
+    items = execute_query(
+        """SELECT oi.order_item_id, oi.order_id, oi.product_id, 
+                  oi.quantity, oi.price, p.product_name, p.image
+           FROM order_items oi
+           JOIN products p ON oi.product_id = p.product_id
+           WHERE oi.order_id = %s""",
+        (order_id,),
+        fetchall=True
+    )
+
+    history = execute_query(
+        """SELECT status, changed_by, notes, created_at 
+           FROM order_status_history 
+           WHERE order_id = %s 
+           ORDER BY created_at ASC""",
+        (order_id,),
+        fetchall=True
+    )
+
+    db_order['items'] = items if items else []
+    db_order['history'] = history if history else []
+    return db_order

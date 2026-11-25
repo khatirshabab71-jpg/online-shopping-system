@@ -1,6 +1,8 @@
 /**
  * ShopNow - Online Shopping System
  * Customer Authentication & Profile JavaScript
+ * Connects directly to the Python backend API and MySQL database.
+ * Phase 2: Strong password validation, email verification, and profile management.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,17 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
     initProfilePage();
 });
 
+function validatePasswordRule(password) {
+    if (password.length < 8) return "Password must be at least 8 characters.";
+    if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter.";
+    if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter.";
+    if (!/[0-9]/.test(password)) return "Password must contain at least one digit.";
+    if (!/[!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\/]/.test(password)) return "Password must contain at least one special character.";
+    return "";
+}
+
 /**
- * Handle Customer Registration Form Validation & Submission
+ * Handle Customer Registration Form Submission
  */
 function initRegisterForm() {
     const registerForm = document.getElementById('registerForm');
     if (!registerForm) return;
 
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Form Fields
+
         const fullName = document.getElementById('fullName').value.trim();
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
@@ -27,12 +37,10 @@ function initRegisterForm() {
         const confirmPassword = document.getElementById('confirmPassword').value;
         const address = document.getElementById('address').value.trim();
 
-        // Clear previous error messages
         clearErrors();
 
         let isValid = true;
 
-        // Validation Checks
         if (!fullName) {
             showFieldError('fullNameError', 'Full name is required.');
             isValid = false;
@@ -48,8 +56,9 @@ function initRegisterForm() {
             isValid = false;
         }
 
-        if (!password || password.length < 6) {
-            showFieldError('passwordError', 'Password must be at least 6 characters.');
+        const pwdErr = validatePasswordRule(password);
+        if (pwdErr) {
+            showFieldError('passwordError', pwdErr);
             isValid = false;
         }
 
@@ -65,46 +74,46 @@ function initRegisterForm() {
 
         if (!isValid) return;
 
-        // Check if email already registered in mock storage
-        const registeredUsers = JSON.parse(localStorage.getItem('shopnow_registered_users')) || [];
-        const existingUser = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-        if (existingUser) {
-            showAlert('authAlert', 'An account with this email address already exists. Please login.', 'error');
-            return;
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
         }
 
-        // Create new user object
-        const newUser = {
-            user_id: 'USR-' + Math.floor(100 + Math.random() * 900),
-            name: fullName,
-            email: email,
-            phone: phone,
-            password: password, // Note: Python backend will hash password with SHA-256
-            address: address,
-            created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
-        };
+        const res = await apiFetch('/register', 'POST', {
+            fullName,
+            email,
+            phone,
+            password,
+            address
+        });
 
-        // Save to temporary registered users array
-        registeredUsers.push(newUser);
-        localStorage.setItem('shopnow_registered_users', JSON.stringify(registeredUsers));
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create My Account';
+        }
 
-        showAlert('authAlert', 'Registration successful! Redirecting to login...', 'success');
-
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 1500);
+        if (res && res.success) {
+            if (res.token) setAuthToken(res.token);
+            if (res.user) setCurrentUser(res.user);
+            showAlert('authAlert', res.message || 'Registration successful! Verification email sent.', 'success');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        } else {
+            showAlert('authAlert', res ? res.message : 'Registration failed. Please try again.', 'error');
+        }
     });
 }
 
 /**
- * Handle Customer Login Form
+ * Handle Customer Login Form Submission
  */
 function initLoginForm() {
     const loginForm = document.getElementById('loginForm');
     if (!loginForm) return;
 
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = document.getElementById('loginEmail').value.trim();
@@ -122,89 +131,194 @@ function initLoginForm() {
             return;
         }
 
-        // Check against mock registered users
-        const registeredUsers = JSON.parse(localStorage.getItem('shopnow_registered_users')) || [];
-        let user = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-        // Demo Fallback User
-        if (!user && email === 'john@example.com' && password === '123456') {
-            user = {
-                user_id: 'USR-101',
-                name: 'John Doe',
-                email: 'john@example.com',
-                phone: '+1234567890',
-                address: '123 University Campus St, Apt 4B, NY 10001'
-            };
+        const submitBtn = loginForm.querySelector('button[type="submit"]') || document.getElementById('loginBtn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
         }
 
-        if (user && user.password && user.password !== password) {
-            showAlert('authAlert', 'Invalid email or password. Please try again.', 'error');
-            return;
+        const res = await apiFetch('/login', 'POST', { email, password });
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Login to Account';
         }
 
-        if (!user) {
-            // For testing demo before backend python server is started
-            user = {
-                user_id: 'USR-' + Math.floor(100 + Math.random() * 900),
-                name: email.split('@')[0],
-                email: email,
-                phone: '+1 555-0199',
-                address: '123 University Campus St'
-            };
+        if (res && res.success) {
+            setAuthToken(res.token);
+            setCurrentUser(res.user);
+            showAlert('authAlert', 'Login successful! Redirecting to storefront...', 'success');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 800);
+        } else {
+            showAlert('authAlert', res ? res.message : 'Invalid email or password.', 'error');
         }
-
-        // Set session
-        setCurrentUser(user);
-        showAlert('authAlert', 'Login successful! Redirecting to homepage...', 'success');
-
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1000);
     });
 }
 
 /**
- * Pre-fill & Handle User Profile Updates
+ * Handle Customer Profile Page (Fetching from MySQL and Updating)
  */
-function initProfilePage() {
+async function initProfilePage() {
     const profileForm = document.getElementById('profileForm');
     if (!profileForm) return;
 
-    const user = getCurrentUser();
-    if (!user) {
+    if (!getAuthToken()) {
         window.location.href = 'login.html';
         return;
     }
 
-    // Fill form elements
-    document.getElementById('profileFullName').value = user.name || '';
-    document.getElementById('profileEmail').value = user.email || '';
-    document.getElementById('profilePhone').value = user.phone || '';
-    document.getElementById('profileAddress').value = user.address || '';
+    // Fetch verified profile from Python backend
+    const res = await apiFetch('/me');
+    if (!res || !res.success || !res.user) {
+        removeUserSession();
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const user = res.user;
+    setCurrentUser(user);
+
+    // Populate form fields
+    const nameInput = document.getElementById('profileFullName');
+    const emailInput = document.getElementById('profileEmail');
+    const phoneInput = document.getElementById('profilePhone');
+    const addressInput = document.getElementById('profileAddress');
+
+    if (nameInput) nameInput.value = user.name || '';
+    if (emailInput) emailInput.value = user.email || '';
+    if (phoneInput) phoneInput.value = user.phone || '';
+    if (addressInput) addressInput.value = user.address || '';
 
     const sidebarName = document.getElementById('sidebarProfileName');
     const sidebarEmail = document.getElementById('sidebarProfileEmail');
-    if (sidebarName) sidebarName.textContent = user.name;
-    if (sidebarEmail) sidebarEmail.textContent = user.email;
+    if (sidebarName) sidebarName.textContent = user.name || '';
+    if (sidebarEmail) sidebarEmail.textContent = user.email || '';
 
-    profileForm.addEventListener('submit', (e) => {
+    // Email verification status
+    const verifyBadge = document.getElementById('emailVerifyStatusBadge');
+    const resendBtn = document.getElementById('resendVerifyBtn');
+
+    if (verifyBadge) {
+        if (user.is_verified) {
+            verifyBadge.textContent = '✓ Verified Customer Account';
+            verifyBadge.style.backgroundColor = '#d1fae5';
+            verifyBadge.style.color = '#065f46';
+            if (resendBtn) resendBtn.classList.add('hidden');
+        } else {
+            verifyBadge.textContent = '⚠️ Unverified Email';
+            verifyBadge.style.backgroundColor = '#fef3c7';
+            verifyBadge.style.color = '#92400e';
+            if (resendBtn) {
+                resendBtn.classList.remove('hidden');
+                resendBtn.onclick = async () => {
+                    resendBtn.disabled = true;
+                    resendBtn.textContent = 'Sending...';
+                    const sendRes = await apiFetch('/auth/resend-verification', 'POST');
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = 'Resend Verification Link';
+                    if (sendRes && sendRes.success) {
+                        showAlert('profileAlert', sendRes.message, 'success');
+                    } else {
+                        showAlert('profileAlert', sendRes ? sendRes.message : 'Failed to resend.', 'error');
+                    }
+                };
+            }
+        }
+    }
+
+    // Quick stats: orders count & wishlist count
+    const ordersCountEl = document.getElementById('userTotalOrdersCount');
+    const wishlistCountEl = document.getElementById('userWishlistCount');
+
+    apiFetch('/orders').then(ordRes => {
+        if (ordRes && ordRes.success && ordRes.orders && ordersCountEl) {
+            ordersCountEl.textContent = ordRes.orders.length;
+        }
+    });
+
+    apiFetch('/wishlist').then(wRes => {
+        if (wRes && wRes.success && wRes.wishlist && wishlistCountEl) {
+            wishlistCountEl.textContent = wRes.wishlist.total_count;
+        }
+    });
+
+    profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const updatedName = document.getElementById('profileFullName').value.trim();
-        const updatedPhone = document.getElementById('profilePhone').value.trim();
-        const updatedAddress = document.getElementById('profileAddress').value.trim();
+        const updatedName = nameInput ? nameInput.value.trim() : '';
+        const updatedPhone = phoneInput ? phoneInput.value.trim() : '';
+        const updatedAddress = addressInput ? addressInput.value.trim() : '';
+        
+        const currentPasswordInput = document.getElementById('profileCurrentPassword');
+        const newPasswordInput = document.getElementById('profileNewPassword');
+        const confirmPasswordInput = document.getElementById('profileConfirmPassword');
+
+        const currentPassword = currentPasswordInput ? currentPasswordInput.value : '';
+        const newPassword = newPasswordInput ? newPasswordInput.value : '';
+        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
 
         if (!updatedName || !updatedPhone || !updatedAddress) {
             showAlert('profileAlert', 'Please fill in all required profile fields.', 'error');
             return;
         }
 
-        user.name = updatedName;
-        user.phone = updatedPhone;
-        user.address = updatedAddress;
+        if (newPassword) {
+            if (!currentPassword) {
+                showAlert('profileAlert', 'Current password is required to change your password.', 'error');
+                return;
+            }
+            const pwdErr = validatePasswordRule(newPassword);
+            if (pwdErr) {
+                showAlert('profileAlert', pwdErr, 'error');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showAlert('profileAlert', 'New passwords do not match.', 'error');
+                return;
+            }
+        }
 
-        setCurrentUser(user);
-        showAlert('profileAlert', 'Profile updated successfully!', 'success');
+        const updateBtn = document.getElementById('updateProfileBtn');
+        if (updateBtn) {
+            updateBtn.disabled = true;
+            updateBtn.textContent = 'Saving Changes...';
+        }
+
+        const payload = {
+            fullName: updatedName,
+            phone: updatedPhone,
+            address: updatedAddress
+        };
+
+        if (newPassword) {
+            payload.currentPassword = currentPassword;
+            payload.newPassword = newPassword;
+        }
+
+        const updateRes = await apiFetch('/profile/update', 'POST', payload);
+
+        if (updateBtn) {
+            updateBtn.disabled = false;
+            updateBtn.textContent = 'Update Profile Settings';
+        }
+
+        if (updateRes && updateRes.success) {
+            user.name = updatedName;
+            user.phone = updatedPhone;
+            user.address = updatedAddress;
+            setCurrentUser(user);
+
+            if (sidebarName) sidebarName.textContent = updatedName;
+            if (currentPasswordInput) currentPasswordInput.value = '';
+            if (newPasswordInput) newPasswordInput.value = '';
+            if (confirmPasswordInput) confirmPasswordInput.value = '';
+
+            showAlert('profileAlert', updateRes.message || 'Profile updated successfully!', 'success');
+        } else {
+            showAlert('profileAlert', updateRes ? updateRes.message : 'Failed to update profile.', 'error');
+        }
     });
 
     const logoutBtn = document.getElementById('logoutBtn');
@@ -213,9 +327,6 @@ function initProfilePage() {
     }
 }
 
-/**
- * Form Helper Utilities
- */
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -223,9 +334,7 @@ function validateEmail(email) {
 
 function showFieldError(errorElementId, message) {
     const elem = document.getElementById(errorElementId);
-    if (elem) {
-        elem.textContent = message;
-    }
+    if (elem) elem.textContent = message;
 }
 
 function clearErrors() {

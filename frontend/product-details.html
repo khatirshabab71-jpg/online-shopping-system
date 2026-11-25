@@ -34,6 +34,11 @@
                         <a href="login.html" class="btn-link">Login</a>
                         <a href="register.html" class="btn-primary">Register</a>
                     </div>
+                    <a href="wishlist.html" class="cart-badge-link" id="wishlistHeaderBadge" title="Saved Items" style="margin-right: 12px;">
+                        <span class="cart-icon">❤️</span>
+                        <span class="cart-text">Wishlist</span>
+                        <span class="badge" id="wishlistCount">0</span>
+                    </a>
                     <a href="cart.html" class="cart-badge-link">
                         <span class="cart-icon">🛒</span>
                         <span class="cart-text">Cart</span>
@@ -48,6 +53,7 @@
                 <ul class="nav-links">
                     <li><a href="index.html">Home</a></li>
                     <li><a href="products.html">All Products</a></li>
+                    <li><a href="wishlist.html">Wishlist</a></li>
                     <li><a href="orders.html">My Orders</a></li>
                     <li><a href="profile.html">My Profile</a></li>
                 </ul>
@@ -112,11 +118,56 @@
             </div>
         </div>
 
-        <!-- Related Products Section -->
-        <section class="section related-products">
-            <h2>You May Also Like</h2>
-            <div class="product-grid" id="relatedProductsGrid">
-                <!-- Related products will load here -->
+        <!-- Customer Reviews & Ratings Section -->
+        <section class="section reviews-section" style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h2>Customer Reviews & Ratings</h2>
+                <div id="reviewVerifiedCountNotice" style="font-size: 0.9rem; color: var(--text-muted);">Real feedback from verified buyers</div>
+            </div>
+
+            <div class="reviews-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+                <!-- Left Column: Rating Summary & Add Review Form -->
+                <div class="reviews-summary-column">
+                    <div class="rating-summary-card" style="background:var(--bg-secondary); padding:20px; border-radius:var(--radius-md); text-align:center; margin-bottom:20px;">
+                        <div id="summaryAvgStars" style="font-size: 2.2rem; color: #f59e0b; font-weight:700;">★ 4.5</div>
+                        <div id="summaryAvgText" style="font-weight:600; margin: 4px 0;">Average Rating</div>
+                        <span id="summaryTotalReviews" style="font-size:0.85rem; color:var(--text-muted);">Based on 0 customer reviews</span>
+                    </div>
+
+                    <!-- Write a Review Box -->
+                    <div class="write-review-card" style="background:#fff; border:1px solid var(--border-color); padding:20px; border-radius:var(--radius-md);">
+                        <h3>Write a Review</h3>
+                        <div id="reviewAlert" class="alert-message hidden"></div>
+                        <form id="writeReviewForm" style="margin-top:15px;">
+                            <div class="form-group">
+                                <label for="reviewRating">Rating</label>
+                                <select id="reviewRating" required>
+                                    <option value="5">★★★★★ (5 Stars - Excellent)</option>
+                                    <option value="4">★★★★☆ (4 Stars - Good)</option>
+                                    <option value="3">★★★☆☆ (3 Stars - Average)</option>
+                                    <option value="2">★★☆☆☆ (2 Stars - Below Average)</option>
+                                    <option value="1">★☆☆☆☆ (1 Star - Poor)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reviewTitle">Review Title</label>
+                                <input type="text" id="reviewTitle" placeholder="e.g. Great quality and fast delivery" required minlength="3">
+                            </div>
+                            <div class="form-group">
+                                <label for="reviewText">Review Details</label>
+                                <textarea id="reviewText" rows="4" placeholder="Write your honest experience with this product..." required minlength="10"></textarea>
+                            </div>
+                            <button type="submit" id="submitReviewBtn" class="btn-primary btn-full">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column: Reviews List -->
+                <div class="reviews-list-column">
+                    <div id="reviewsListContainer">
+                        <div class="loading-spinner">Loading reviews...</div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
